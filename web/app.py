@@ -4,9 +4,8 @@ from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
 from reportlab.lib import colors
 from datetime import datetime
-from flask import request
-
-import mysql.connector
+import psycopg2
+import psycopg2.extras  # 🔥 WAJIB: Untuk membaca hasil query dalam bentuk dictionary
 import joblib
 import json
 import io
@@ -20,13 +19,12 @@ model = joblib.load("model_saved/model_rf.pkl")
 # 🔥 load urutan fitur (WAJIB)
 fitur_urutan = joblib.load("model_saved/fitur_urutan.pkl")
 
-# ================= DATABASE =================
-db = mysql.connector.connect(
-    host="localhost",
-    user="root",
-    password="",
-    database="db_prediksi"
-)
+# ================= DATABASE (SUPABASE) =================
+# ⚠️ Tempelkan URI dari Supabase kamu di bawah ini dan ganti [PASSWORD_KAMU]
+DATABASE_URL = "postgresql://postgres:[Val_27_03_200]@db.ujnymohyappmueveidlq.supabase.co:5432/postgres"
+
+db = psycopg2.connect(DATABASE_URL)
+
 
 # ================= HOME =================
 @app.route('/')
@@ -57,6 +55,7 @@ def register():
             (username, hashed_password)
         )
         db.commit()
+        cursor.close()
 
         return redirect('/login')
 
@@ -70,12 +69,14 @@ def login():
         username = request.form.get('username')
         password = request.form.get('password')
 
-        cursor = db.cursor(dictionary=True)
+        # 🔥 Menggunakan RealDictCursor menggantikan dictionary=True milik MySQL
+        cursor = db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
         cursor.execute(
             "SELECT * FROM users WHERE username=%s",
             (username,)
         )
         user = cursor.fetchone()
+        cursor.close()
 
         if not user:
             return render_template('login.html', error="User tidak ditemukan!")
@@ -150,6 +151,7 @@ def predict():
         VALUES (%s, %s, %s, %s, %s, %s)
     """, (session['username'], nama, umur, hasil, persen, jawaban_json))
     db.commit()
+    cursor.close()
 
     return render_template(
         'result.html',
@@ -159,20 +161,24 @@ def predict():
         umur=umur
     )
 
+
 # ================= RIWAYAT =================
 @app.route('/riwayat')
 def riwayat():
     if 'username' not in session:
         return redirect('/login')
 
-    cursor = db.cursor(dictionary=True)
+    # 🔥 Menggunakan RealDictCursor
+    cursor = db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
     cursor.execute(
         "SELECT * FROM riwayat WHERE username=%s ORDER BY id DESC",
         (session['username'],)
     )
     data = cursor.fetchall()
+    cursor.close()
 
     return render_template('riwayat.html', data=data)
+
 
 # ================= DETAIL =================
 @app.route('/detail/<int:id>')
@@ -180,9 +186,11 @@ def detail(id):
     if 'username' not in session:
         return redirect('/login')
 
-    cursor = db.cursor(dictionary=True)
+    # 🔥 Menggunakan RealDictCursor
+    cursor = db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
     cursor.execute("SELECT * FROM riwayat WHERE id=%s", (id,))
     data = cursor.fetchone()
+    cursor.close()
 
     if not data:
         return "Data tidak ditemukan!"
@@ -195,13 +203,16 @@ def detail(id):
         jawaban=jawaban
     )
 
+
 # ================= DOWNLOAD PDF =================
 @app.route('/download_pdf/<int:id>')
 def download_pdf(id):
 
-    cursor = db.cursor(dictionary=True)
+    # 🔥 Menggunakan RealDictCursor
+    cursor = db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
     cursor.execute("SELECT * FROM riwayat WHERE id=%s", (id,))
     data = cursor.fetchone()
+    cursor.close()
 
     jawaban = json.loads(data['jawaban'])
 
@@ -303,6 +314,7 @@ def download_pdf(id):
         headers={"Content-Disposition": "attachment;filename=hasil_prediksi.pdf"}
     )
 
+
 @app.route('/hapus/<int:id>', methods=['POST'])
 def hapus(id):
     if 'username' not in session:
@@ -311,20 +323,25 @@ def hapus(id):
     cursor = db.cursor()
     cursor.execute("DELETE FROM riwayat WHERE id=%s", (id,))
     db.commit()
+    cursor.close()
 
     return redirect('/riwayat')
+
 
 @app.route('/tentang')
 def tentang():
     return render_template('tentang.html')
 
+
 @app.route('/cara_kerja')
 def cara_kerja():
     return render_template('cara_kerja.html')
 
+
 @app.route('/home')
 def home_page():
     return render_template('home.html')
+
 
 # ================= RUN =================
 if __name__ == '__main__':
