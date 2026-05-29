@@ -21,7 +21,7 @@ fitur_urutan = joblib.load("model_saved/fitur_urutan.pkl")
 
 # ================= DATABASE (SUPABASE) =================
 # ⚠️ Tempelkan URI dari Supabase kamu di bawah ini dan ganti [PASSWORD_KAMU]
-DATABASE_URL = "postgresql://postgres:[Val_27_03_200]@db.ujnymohyappmueveidlq.supabase.co:5432/postgres"
+DATABASE_URL = "postgresql://postgres:Val_27_03_200@db.ujnymohyappmueveidlq.supabase.co:6543/postgres"
 
 db = psycopg2.connect(DATABASE_URL)
 
