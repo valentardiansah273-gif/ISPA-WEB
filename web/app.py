@@ -4,10 +4,10 @@ from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
 from reportlab.lib import colors
 from datetime import datetime
-from sqlalchemy import create_engine
 
 import psycopg2
-import psycopg2.extras  # 🔥 WAJIB: Untuk membaca hasil query dalam bentuk dictionary
+from psycopg2.pool import ThreadedConnectionPool  # 🔥 Tambahan untuk pooling koneksi
+import psycopg2.extras  
 import joblib
 import json
 import io
@@ -21,10 +21,18 @@ model = joblib.load("model_saved/model_rf.pkl")
 # 🔥 load urutan fitur (WAJIB)
 fitur_urutan = joblib.load("model_saved/fitur_urutan.pkl")
 
-# ================= DATABASE (SUPABASE POOLER VIA SQLALCHEMY) =================
+# ================= DATABASE CONNECTION POOL =================
 DATABASE_URL = "postgresql://usrcincbrlnv5ctctci3:IBfGxEleM4JgSh94b4slGSAjUVqw1K@bzv6ndii9goa0jgadd44-postgresql.services.clever-cloud.com:50013/bzv6ndii9goa0jgadd44"
 
-db = psycopg2.connect(DATABASE_URL)
+# Membuat pool koneksi (min 1 koneksi, maks 20 koneksi bertingkat)
+db_pool = ThreadedConnectionPool(1, 20, DATABASE_URL)
+
+# Fungsi pembantu untuk mengambil koneksi secara aman
+def get_db_connection():
+    return db_pool.getconn()
+
+def release_db_connection(conn):
+    db_pool.putconn(conn)
 
 
 # ================= HOME =================
@@ -50,13 +58,17 @@ def register():
 
         hashed_password = generate_password_hash(password)
 
-        cursor = db.cursor()
-        cursor.execute(
-            "INSERT INTO users (username, password) VALUES (%s, %s)",
-            (username, hashed_password)
-        )
-        db.commit()
-        cursor.close()
+        conn = get_db_connection()
+        try:
+            cursor = conn.cursor()
+            cursor.execute(
+                "INSERT INTO users (username, password) VALUES (%s, %s)",
+                (username, hashed_password)
+            )
+            conn.commit()
+            cursor.close()
+        finally:
+            release_db_connection(conn)
 
         return redirect('/login')
 
@@ -70,14 +82,17 @@ def login():
         username = request.form.get('username')
         password = request.form.get('password')
 
-        # 🔥 Menggunakan RealDictCursor menggantikan dictionary=True milik MySQL
-        cursor = db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
-        cursor.execute(
-            "SELECT * FROM users WHERE username=%s",
-            (username,)
-        )
-        user = cursor.fetchone()
-        cursor.close()
+        conn = get_db_connection()
+        try:
+            cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+            cursor.execute(
+                "SELECT * FROM users WHERE username=%s",
+                (username,)
+            )
+            user = cursor.fetchone()
+            cursor.close()
+        finally:
+            release_db_connection(conn)
 
         if not user:
             return render_template('login.html', error="User tidak ditemukan!")
@@ -114,7 +129,7 @@ def predict():
 
     jawaban_dict = {}
     for i in range(16):
-        val = int(request.form.get(f'q{i}'))
+        val = int(request.form.get(f'q{i}', 0)) # Default ke 0 jika kosong
         jawaban_dict[f'q{i}'] = val
 
     data_map = {
@@ -145,14 +160,18 @@ def predict():
 
     jawaban_json = json.dumps(jawaban_dict)
 
-    cursor = db.cursor()
-    cursor.execute("""
-        INSERT INTO riwayat 
-        (username, nama, umur, hasil, persen, jawaban) 
-        VALUES (%s, %s, %s, %s, %s, %s)
-    """, (session['username'], nama, umur, hasil, persen, jawaban_json))
-    db.commit()
-    cursor.close()
+    conn = get_db_connection()
+    try:
+        cursor = conn.cursor()
+        cursor.execute("""
+            INSERT INTO riwayat 
+            (username, nama, umur, hasil, persen, jawaban) 
+            VALUES (%s, %s, %s, %s, %s, %s)
+        """, (session['username'], nama, umur, hasil, persen, jawaban_json))
+        conn.commit()
+        cursor.close()
+    finally:
+        release_db_connection(conn)
 
     return render_template(
         'result.html',
@@ -169,14 +188,17 @@ def riwayat():
     if 'username' not in session:
         return redirect('/login')
 
-    # 🔥 Menggunakan RealDictCursor
-    cursor = db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
-    cursor.execute(
-        "SELECT * FROM riwayat WHERE username=%s ORDER BY id DESC",
-        (session['username'],)
-    )
-    data = cursor.fetchall()
-    cursor.close()
+    conn = get_db_connection()
+    try:
+        cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        cursor.execute(
+            "SELECT * FROM riwayat WHERE username=%s ORDER BY id DESC",
+            (session['username'],)
+        )
+        data = cursor.fetchall()
+        cursor.close()
+    finally:
+        release_db_connection(conn)
 
     return render_template('riwayat.html', data=data)
 
@@ -187,11 +209,14 @@ def detail(id):
     if 'username' not in session:
         return redirect('/login')
 
-    # 🔥 Menggunakan RealDictCursor
-    cursor = db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
-    cursor.execute("SELECT * FROM riwayat WHERE id=%s", (id,))
-    data = cursor.fetchone()
-    cursor.close()
+    conn = get_db_connection()
+    try:
+        cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        cursor.execute("SELECT * FROM riwayat WHERE id=%s", (id,))
+        data = cursor.fetchone()
+        cursor.close()
+    finally:
+        release_db_connection(conn)
 
     if not data:
         return "Data tidak ditemukan!"
@@ -209,11 +234,17 @@ def detail(id):
 @app.route('/download_pdf/<int:id>')
 def download_pdf(id):
 
-    # 🔥 Menggunakan RealDictCursor
-    cursor = db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
-    cursor.execute("SELECT * FROM riwayat WHERE id=%s", (id,))
-    data = cursor.fetchone()
-    cursor.close()
+    conn = get_db_connection()
+    try:
+        cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        cursor.execute("SELECT * FROM riwayat WHERE id=%s", (id,))
+        data = cursor.fetchone()
+        cursor.close()
+    finally:
+        release_db_connection(conn)
+
+    if not data:
+        return "Data tidak ditemukan!"
 
     jawaban = json.loads(data['jawaban'])
 
@@ -321,10 +352,14 @@ def hapus(id):
     if 'username' not in session:
         return redirect('/login')
 
-    cursor = db.cursor()
-    cursor.execute("DELETE FROM riwayat WHERE id=%s", (id,))
-    db.commit()
-    cursor.close()
+    conn = get_db_connection()
+    try:
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM riwayat WHERE id=%s", (id,))
+        conn.commit()
+        cursor.close()
+    finally:
+        release_db_connection(conn)
 
     return redirect('/riwayat')
 
