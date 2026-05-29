@@ -4,6 +4,8 @@ from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
 from reportlab.lib import colors
 from datetime import datetime
+from sqlalchemy import create_engine
+
 import psycopg2
 import psycopg2.extras  # 🔥 WAJIB: Untuk membaca hasil query dalam bentuk dictionary
 import joblib
@@ -19,10 +21,12 @@ model = joblib.load("model_saved/model_rf.pkl")
 # 🔥 load urutan fitur (WAJIB)
 fitur_urutan = joblib.load("model_saved/fitur_urutan.pkl")
 
-# ================= DATABASE (SUPABASE POOLER) =================
+# ================= DATABASE (SUPABASE POOLER VIA SQLALCHEMY) =================
 DATABASE_URL = "postgresql://postgres:Val_27_03_200@db.ujnymohyappmueveidlq.supabase.co:6543/postgres"
 
-db = psycopg2.connect(DATABASE_URL)
+# Engine SQLAlchemy otomatis menangani masalah penerjemahan IP jaringannya
+engine = create_engine(DATABASE_URL)
+db = engine.raw_connection()
 
 
 # ================= HOME =================
