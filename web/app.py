@@ -148,7 +148,7 @@ def predict():
     data = [data_map[f] for f in fitur_urutan]
 
     prob = model.predict_proba([data])[0][1]
-    persen = round(prob * 100, 2)
+    persen = float(round(prob * 100, 2))
     hasil = "ISPA" if prob > 0.5 else "Tidak ISPA"
 
     jawaban_json = json.dumps(jawaban_dict)
