@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Riwayat - BreathSafe</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<style>
+body {
+    background: linear-gradient(to right, #00c6ff, #0072ff);
+    color: white;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+/* 🔥 NAVBAR */
+.navbar {
+    background: rgba(0, 0, 0, 0.4) !important;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+}
+
+.logo-img {
+    width: 40px;
+    height: 40px;
+    object-fit: cover;
+    border-radius: 50%;
+    box-shadow: 0 0 10px rgba(255,255,255,0.6);
+    transition: 0.3s;
+}
+
+.logo-img:hover {
+    transform: scale(1.1) rotate(5deg);
+    box-shadow: 0 0 20px rgba(255,255,255,0.9);
+}
+
+/* NAV LINK */
+.nav-link {
+    position: relative;
+    transition: 0.3s;
+}
+
+.nav-link::after {
+    content: "";
+    position: absolute;
+    width: 0%;
+    height: 2px;
+    left: 0;
+    bottom: 0;
+    background: #00c6ff;
+    transition: 0.3s;
+}
+
+.nav-link:hover::after {
+    width: 100%;
+}
+
+.nav-link:hover {
+    color: #00c6ff !important;
+}
+
+.nav-link.active {
+    color: #00c6ff !important;
+    font-weight: bold;
+}
+
+.nav-link.active::after {
+    width: 100%;
+}
+
+/* CONTAINER */
+.container {
+    margin-top: 40px;
+}
+
+/* 🔥 TABLE STYLE */
+.table-custom {
+    background: rgba(255,255,255,0.85);
+    backdrop-filter: blur(15px);
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+/* 🔥 FIX WARNA TEKS */
+.table-custom th {
+    background: rgba(0,0,0,0.2);
+    color: #000 !important;
+}
+
+.table-custom td {
+    color: #222 !important;
+}
+
+/* BUTTON */
+.btn-lihat {
+    background: #00c6ff;
+    border-radius: 20px;
+    border: none;
+    color: white;
+}
+
+.btn-hapus {
+    background: red;
+    border-radius: 20px;
+    border: none;
+    color: white;
+}
+
+.btn:hover {
+    transform: scale(1.05);
+}
+</style>
+</head>
+
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-dark px-4">
+    
+    <a class="navbar-brand d-flex align-items-center" href="/">
+        <img src="{{ url_for('static', filename='logo.png') }}" 
+             class="logo-img me-2">
+        <b>BreathSafe</b>
+    </a>
+
+    <button class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#nav">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="nav">
+
+        <!-- MENU -->
+        <ul class="navbar-nav mx-auto">
+            <li class="nav-item">
+                <a class="nav-link {% if request.path == '/' %}active{% endif %}" href="/">Home</a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link {% if request.path == '/tentang' %}active{% endif %}" href="/tentang">Tentang</a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link {% if request.path == '/cara_kerja' %}active{% endif %}" href="/cara_kerja">Cara Kerja</a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link {% if request.path == '/riwayat' %}active{% endif %}" href="/riwayat">Riwayat</a>
+            </li>
+        </ul>
+
+        <!-- KANAN -->
+        <div class="d-flex align-items-center gap-2">
+            {% if 'username' in session %}
+                <span class="text-white">👤 {{ session['username'] }}</span>
+                <a href="/logout" class="btn btn-danger btn-sm">Logout</a>
+            {% else %}
+                <a href="/login" class="btn btn-outline-light btn-sm">Login</a>
+                <a href="/register" class="btn btn-primary btn-sm">Register</a>
+            {% endif %}
+        </div>
+
+    </div>
+</nav>
+
+<!-- 🔥 CONTENT -->
+<div class="container">
+
+<h2 class="mb-4">📊 Riwayat Prediksi</h2>
+
+<div class="table-responsive table-custom">
+<table class="table text-center align-middle mb-0">
+
+    <thead>
+        <tr>
+            <th>Nama</th>
+            <th>Umur</th>
+            <th>Aksi</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        {% for d in data %}
+        <tr>
+            <td>{{ d.nama }}</td>
+            <td>{{ d.umur }}</td>
+            <td>
+
+                <a href="/detail/{{ d.id }}" class="btn btn-lihat btn-sm">
+                    Lihat
+                </a>
+
+                <form action="/hapus/{{ d.id }}" method="post" style="display:inline;">
+                    <button class="btn btn-hapus btn-sm">
+                        Hapus
+                    </button>
+                </form>
+
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+
+</table>
+</div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>

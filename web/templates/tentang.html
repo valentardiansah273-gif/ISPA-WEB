@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Tentang - BreathSafe</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+    body {
+        background: linear-gradient(to right, #00c6ff, #0072ff);
+        color: white;
+    }
+
+    .navbar {
+        background: rgba(0, 0, 0, 0.4) !important;
+        backdrop-filter: blur(10px);
+        box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    }
+
+    .logo-img {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+    }
+
+    .nav-link.active {
+        color: #00c6ff !important;
+        font-weight: bold;
+    }
+
+    .card-box {
+        background: rgba(255,255,255,0.1);
+        backdrop-filter: blur(15px);
+        border-radius: 20px;
+        padding: 30px;
+        margin-top: 40px;
+        animation: fadeIn 1s ease;
+    }
+
+    @keyframes fadeIn {
+        from {opacity:0; transform: translateY(30px);}
+        to {opacity:1; transform: translateY(0);}
+    }
+
+    h2 {
+        margin-bottom: 20px;
+    }
+
+    .nav-link.active {
+        color: #00c6ff !important;
+        font-weight: bold;
+    }
+
+    .nav-link.active::after {
+        width: 100%;
+    }
+    </style>
+</head>
+
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar navbar-expand-lg navbar-dark px-4">
+    
+    <a class="navbar-brand d-flex align-items-center" href="/">
+        <img src="{{ url_for('static', filename='logo.png') }}" class="logo-img me-2">
+        <b>BreathSafe</b>
+    </a>
+
+    <button class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#nav">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="nav">
+
+        <ul class="navbar-nav mx-auto">
+            <li class="nav-item">
+                <a class="nav-link {% if request.path == '/' %}active{% endif %}" href="/">Home</a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link {% if request.path == '/tentang' %}active{% endif %}" href="/tentang">Tentang</a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link {% if request.path == '/cara_kerja' %}active{% endif %}" href="/cara_kerja">Cara Kerja</a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link {% if request.path == '/riwayat' %}active{% endif %}" href="/riwayat">Riwayat</a>
+            </li>
+        </ul>
+
+        <div class="d-flex gap-2">
+            {% if 'username' in session %}
+                <span class="text-white me-2">👤 {{ session['username'] }}</span>
+                <a href="/logout" class="btn btn-danger btn-sm">Logout</a>
+            {% else %}
+                <a href="/login" class="btn btn-outline-light btn-sm">Login</a>
+                <a href="/register" class="btn btn-primary btn-sm">Register</a>
+            {% endif %}
+        </div>
+
+    </div>
+</nav>
+
+
+<div class="container">
+
+<!-- TENTANG -->
+<div class="card-box">
+<h2>🫁 Tentang BreathSafe</h2>
+
+<p>
+<b>BreathSafe</b> adalah aplikasi berbasis kecerdasan buatan (AI) yang dirancang
+untuk membantu mendeteksi kemungkinan penyakit Infeksi Saluran Pernapasan Akut (ISPA)
+secara cepat dan praktis.
+</p>
+
+<p>
+Aplikasi ini hadir sebagai solusi awal bagi masyarakat untuk memahami kondisi
+kesehatan pernapasan tanpa harus langsung datang ke fasilitas kesehatan.
+Dengan teknologi machine learning, BreathSafe mampu memberikan prediksi berdasarkan gejala yang diinput oleh pengguna.
+</p>
+
+</div>
+
+<!-- TEKNOLOGI -->
+<div class="card-box">
+<h2>🤖 Teknologi yang Digunakan</h2>
+
+<p>
+BreathSafe menggunakan algoritma <b>Random Forest</b>, salah satu metode machine learning
+yang efektif dalam melakukan klasifikasi data.
+</p>
+
+<p>
+Model ini dilatih menggunakan dataset gejala penyakit ISPA sehingga mampu mengenali
+pola-pola tertentu dan memberikan hasil prediksi dengan tingkat akurasi yang baik.
+</p>
+
+</div>
+
+<!-- MANFAAT -->
+<div class="card-box">
+<h2>🌟 Manfaat Aplikasi</h2>
+
+<ul>
+<li>Membantu deteksi dini penyakit pernapasan</li>
+<li>Meningkatkan kesadaran kesehatan masyarakat</li>
+<li>Menghemat waktu sebelum konsultasi ke dokter</li>
+<li>Dapat diakses kapan saja secara online</li>
+</ul>
+
+</div>
+
+<!-- TUJUAN -->
+<div class="card-box">
+<h2>🎯 Tujuan Pengembangan</h2>
+
+<p>
+Tujuan utama dari pengembangan aplikasi ini adalah untuk memberikan alat bantu
+yang mudah digunakan oleh masyarakat dalam melakukan skrining awal terhadap
+penyakit ISPA.
+</p>
+
+<p>
+Dengan adanya aplikasi ini, diharapkan pengguna dapat lebih cepat mengambil tindakan
+yang tepat terkait kondisi kesehatannya.
+</p>
+
+</div>
+
+<!-- DISCLAIMER -->
+<div class="card-box">
+<h2>⚠️ Disclaimer</h2>
+
+<p>
+Hasil yang diberikan oleh sistem ini bukan merupakan diagnosis medis resmi.
+Aplikasi ini hanya sebagai alat bantu prediksi awal.
+</p>
+
+<p>
+Untuk diagnosis yang akurat dan penanganan lebih lanjut, pengguna tetap disarankan
+untuk berkonsultasi dengan tenaga medis profesional.
+</p>
+
+</div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>

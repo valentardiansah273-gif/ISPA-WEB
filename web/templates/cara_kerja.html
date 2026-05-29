@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Cara Kerja - BreathSafe</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+    body {
+        background: linear-gradient(to right, #00c6ff, #0072ff);
+        color: white;
+    }
+
+    /* NAVBAR */
+    .navbar {
+        background: rgba(0, 0, 0, 0.4) !important;
+        backdrop-filter: blur(10px);
+        box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    }
+
+    .logo-img {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+    }
+
+    .nav-link.active {
+        color: #00c6ff !important;
+        font-weight: bold;
+    }
+
+    /* STEP CARD */
+    .step-box {
+        background: rgba(255,255,255,0.1);
+        backdrop-filter: blur(15px);
+        border-radius: 20px;
+        padding: 30px;
+        margin-top: 30px;
+        text-align: center;
+        transition: 0.3s;
+        animation: fadeIn 1s ease;
+    }
+
+    .step-box:hover {
+        transform: translateY(-10px) scale(1.02);
+    }
+
+    .step-icon {
+        font-size: 40px;
+        margin-bottom: 15px;
+    }
+
+    @keyframes fadeIn {
+        from {opacity:0; transform: translateY(40px);}
+        to {opacity:1; transform: translateY(0);}
+    }
+
+    .title {
+        margin-top: 40px;
+        text-align: center;
+    }
+
+    .nav-link.active {
+        color: #00c6ff !important;
+        font-weight: bold;
+    }
+
+    .nav-link.active::after {
+        width: 100%;
+    }
+    
+    </style>
+</head>
+
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar navbar-expand-lg navbar-dark px-4">
+    
+    <a class="navbar-brand d-flex align-items-center" href="/">
+        <img src="{{ url_for('static', filename='logo.png') }}" class="logo-img me-2">
+        <b>BreathSafe</b>
+    </a>
+
+    <button class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#nav">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="nav">
+
+        <ul class="navbar-nav mx-auto">
+            <li class="nav-item">
+                <a class="nav-link {% if request.path == '/' %}active{% endif %}" href="/">Home</a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link {% if request.path == '/tentang' %}active{% endif %}" href="/tentang">Tentang</a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link {% if request.path == '/cara_kerja' %}active{% endif %}" href="/cara_kerja">Cara Kerja</a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link {% if request.path == '/riwayat' %}active{% endif %}" href="/riwayat">Riwayat</a>
+            </li>
+        </ul>
+
+        <div class="d-flex gap-2">
+            {% if 'username' in session %}
+                <span class="text-white me-2">👤 {{ session['username'] }}</span>
+                <a href="/logout" class="btn btn-danger btn-sm">Logout</a>
+            {% else %}
+                <a href="/login" class="btn btn-outline-light btn-sm">Login</a>
+                <a href="/register" class="btn btn-primary btn-sm">Register</a>
+            {% endif %}
+        </div>
+
+    </div>
+</nav>
+
+
+<div class="container">
+
+<h2 class="title">⚙️ Cara Kerja BreathSafe</h2>
+
+<div class="row">
+
+    <div class="col-md-4">
+        <div class="step-box">
+            <div class="step-icon">📝</div>
+            <h4>1. Input Gejala</h4>
+            <p>
+                Pengguna mengisi form gejala yang dirasakan seperti batuk,
+                demam, sesak napas, dan lainnya.
+            </p>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="step-box">
+            <div class="step-icon">🤖</div>
+            <h4>2. Proses AI</h4>
+            <p>
+                Data gejala akan diproses oleh sistem menggunakan algoritma
+                machine learning Random Forest.
+            </p>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="step-box">
+            <div class="step-icon">📊</div>
+            <h4>3. Hasil Prediksi</h4>
+            <p>
+                Sistem menampilkan hasil prediksi beserta persentase
+                kemungkinan penyakit ISPA.
+            </p>
+        </div>
+    </div>
+
+</div>
+
+<div class="row">
+
+    <div class="col-md-6">
+        <div class="step-box">
+            <div class="step-icon">💾</div>
+            <h4>4. Simpan Riwayat</h4>
+            <p>
+                Hasil prediksi disimpan sehingga pengguna dapat melihat kembali
+                riwayat pemeriksaan sebelumnya.
+            </p>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="step-box">
+            <div class="step-icon">⚠️</div>
+            <h4>5. Rekomendasi</h4>
+            <p>
+                Sistem memberikan saran awal, namun tetap disarankan untuk
+                konsultasi ke dokter untuk diagnosis lebih lanjut.
+            </p>
+        </div>
+    </div>
+
+</div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>

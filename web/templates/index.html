@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Prediksi Risiko ISPA</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #4facfe, #00f2fe);
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 800px;
+            margin: 40px auto;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0px 10px 30px rgba(0,0,0,0.2);
+        }
+
+        h2 {
+            text-align: center;
+            color: #333;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        .input-group label {
+            font-weight: 600;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid #ccc;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        .input-group input:focus {
+            border-color: #4facfe;
+            box-shadow: 0 0 5px rgba(79,172,254,0.5);
+        }
+
+        /* PROGRESS */
+        .progress-wrapper {
+            position: sticky;
+            top: 0;
+            background: white;
+            padding: 10px 0;
+            z-index: 100;
+        }
+
+        .progress-container {
+            width: 100%;
+            height: 12px;
+            background: #ddd;
+            border-radius: 10px;
+        }
+
+        #progress-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #4facfe, #00c6ff);
+            border-radius: 10px;
+            transition: 0.3s;
+        }
+
+        #progress-text {
+            text-align: center;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+
+        .question {
+            margin-bottom: 18px;
+            padding: 18px;
+            border-radius: 12px;
+            background: #f9f9f9;
+            transition: 0.3s;
+        }
+
+        .question:hover {
+            transform: scale(1.01);
+        }
+
+        .question p {
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .options {
+            display: flex;
+            gap: 10px;
+        }
+
+        .options label {
+            flex: 1;
+            cursor: pointer;
+        }
+
+        .options span {
+            display: block;
+            text-align: center;
+            padding: 12px;
+            border-radius: 10px;
+            background: #e0e0e0;
+            transition: 0.2s;
+        }
+
+        .options span:hover {
+            background: #d0d0d0;
+        }
+
+        .options input {
+            display: none;
+        }
+
+        .options input[value="1"]:checked + span {
+            background: #28a745;
+            color: white;
+        }
+
+        .options input[value="0"]:checked + span {
+            background: #dc3545;
+            color: white;
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            margin-top: 20px;
+            background: linear-gradient(135deg, #4facfe, #00c6ff);
+            border: none;
+            color: white;
+            font-size: 18px;
+            border-radius: 12px;
+            cursor: pointer;
+        }
+
+        @media(max-width: 600px) {
+            .options {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+    <h2>🩺 Form Prediksi Risiko ISPA</h2>
+
+    <form method="POST" action="/predict">
+
+        <!-- INPUT USER -->
+        <div class="input-group">
+            <label>👤 Nama Pasien</label>
+            <input type="text" name="nama" required placeholder="Masukkan nama Anda">
+        </div>
+
+        <div class="input-group">
+            <label>🎂 Umur</label>
+            <input type="number" name="umur" required min="1" placeholder="Masukkan umur Anda">
+        </div>
+
+        <!-- PROGRESS -->
+        <div class="progress-wrapper">
+            <div class="progress-container">
+                <div id="progress-bar"></div>
+            </div>
+            <p id="progress-text">0 / 16 terisi</p>
+        </div>
+
+        {% set pertanyaan = [
+        "Apakah Anda mengalami batuk kering?",
+        "Apakah Anda mengalami batuk berdahak?",
+        "Apakah Anda mengalami demam?",
+        "Apakah Anda mengalami pilek?",
+        "Apakah Anda mengalami hidung tersumbat?",
+        "Apakah Anda merasa sesak napas?",
+        "Apakah Anda mengalami nyeri tenggorokan?",
+        "Apakah Anda mengalami sakit kepala?",
+        "Apakah Anda mengalami mual atau muntah?",
+        "Apakah Anda mengalami nyeri dada?",
+        "Apakah suara Anda serak?",
+        "Apakah Anda merasa kelelahan?",
+        "Apakah Anda berkeringat di malam hari?",
+        "Apakah nafsu makan Anda menurun?",
+        "Apakah Anda kehilangan penciuman?",
+        "Apakah Anda mengalami nyeri saat menelan?"
+        ] %}
+
+        {% for i in range(pertanyaan|length) %}
+        <div class="question">
+            <p>{{ i+1 }}. {{ pertanyaan[i] }}</p>
+
+            <div class="options">
+                <label>
+                    <input type="radio" name="q{{i}}" value="1" required>
+                    <span>Ya</span>
+                </label>
+
+                <label>
+                    <input type="radio" name="q{{i}}" value="0" required>
+                    <span>Tidak</span>
+                </label>
+            </div>
+        </div>
+        {% endfor %}
+
+        <button type="submit">🔍 Prediksi Sekarang</button>
+
+    </form>
+</div>
+
+<script>
+const total = 16;
+
+function updateProgress() {
+    let answered = 0;
+
+    for (let i = 0; i < total; i++) {
+        let radios = document.getElementsByName("q" + i);
+        for (let r of radios) {
+            if (r.checked) {
+                answered++;
+                break;
+            }
+        }
+    }
+
+    let percent = (answered / total) * 100;
+
+    document.getElementById("progress-bar").style.width = percent + "%";
+    document.getElementById("progress-text").innerText =
+        answered + " / " + total + " terisi";
+}
+
+document.querySelectorAll('input[type="radio"]').forEach((radio) => {
+    radio.addEventListener("change", updateProgress);
+});
+</script>
+
+</body>
+</html>
