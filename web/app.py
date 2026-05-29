@@ -6,7 +6,6 @@ from reportlab.lib import colors
 from datetime import datetime
 
 import psycopg2
-from psycopg2.pool import ThreadedConnectionPool  # 🔥 Tambahan untuk pooling koneksi
 import psycopg2.extras  
 import joblib
 import json
@@ -21,17 +20,12 @@ model = joblib.load("model_saved/model_rf.pkl")
 # 🔥 load urutan fitur (WAJIB)
 fitur_urutan = joblib.load("model_saved/fitur_urutan.pkl")
 
-# ================= DATABASE CONNECTION POOL =================
+# ================= DATABASE URL =================
 DATABASE_URL = "postgresql://usrcincbrlnv5ctctci3:IBfGxEleM4JgSh94b4slGSAjUVqw1K@bzv6ndii9goa0jgadd44-postgresql.services.clever-cloud.com:50013/bzv6ndii9goa0jgadd44"
 
-db_pool = ThreadedConnectionPool(1, 2, DATABASE_URL)
-
-# Fungsi pembantu untuk mengambil koneksi secara aman
+# Fungsi pembantu untuk membuat koneksi baru setiap kali dipanggil
 def get_db_connection():
-    return db_pool.getconn()
-
-def release_db_connection(conn):
-    db_pool.putconn(conn)
+    return psycopg2.connect(DATABASE_URL)
 
 
 # ================= HOME =================
@@ -67,7 +61,7 @@ def register():
             conn.commit()
             cursor.close()
         finally:
-            release_db_connection(conn)
+            conn.close() # 🔥 Pastikan koneksi langsung mati total
 
         return redirect('/login')
 
@@ -91,7 +85,7 @@ def login():
             user = cursor.fetchone()
             cursor.close()
         finally:
-            release_db_connection(conn)
+            conn.close() # 🔥 Pastikan koneksi langsung mati total
 
         if not user:
             return render_template('login.html', error="User tidak ditemukan!")
@@ -128,7 +122,7 @@ def predict():
 
     jawaban_dict = {}
     for i in range(16):
-        val = int(request.form.get(f'q{i}', 0)) # Default ke 0 jika kosong
+        val = int(request.form.get(f'q{i}', 0))
         jawaban_dict[f'q{i}'] = val
 
     data_map = {
@@ -170,7 +164,7 @@ def predict():
         conn.commit()
         cursor.close()
     finally:
-        release_db_connection(conn)
+        conn.close() # 🔥 Pastikan koneksi langsung mati total
 
     return render_template(
         'result.html',
@@ -197,7 +191,7 @@ def riwayat():
         data = cursor.fetchall()
         cursor.close()
     finally:
-        release_db_connection(conn)
+        conn.close() # 🔥 Pastikan koneksi langsung mati total
 
     return render_template('riwayat.html', data=data)
 
@@ -215,7 +209,7 @@ def detail(id):
         data = cursor.fetchone()
         cursor.close()
     finally:
-        release_db_connection(conn)
+        conn.close() # 🔥 Pastikan koneksi langsung mati total
 
     if not data:
         return "Data tidak ditemukan!"
@@ -240,7 +234,7 @@ def download_pdf(id):
         data = cursor.fetchone()
         cursor.close()
     finally:
-        release_db_connection(conn)
+        conn.close() # 🔥 Pastikan koneksi langsung mati total
 
     if not data:
         return "Data tidak ditemukan!"
@@ -248,22 +242,11 @@ def download_pdf(id):
     jawaban = json.loads(data['jawaban'])
 
     pertanyaan = {
-        'q0': 'Batuk kering',
-        'q1': 'Batuk berdahak',
-        'q2': 'Demam',
-        'q3': 'Pilek',
-        'q4': 'Hidung tersumbat',
-        'q5': 'Sesak napas',
-        'q6': 'Nyeri tenggorokan',
-        'q7': 'Sakit kepala',
-        'q8': 'Mual / muntah',
-        'q9': 'Nyeri dada',
-        'q10': 'Suara serak',
-        'q11': 'Kelelahan',
-        'q12': 'Keringat malam',
-        'q13': 'Nafsu makan turun',
-        'q14': 'Hilang penciuman',
-        'q15': 'Nyeri saat menelan'
+        'q0': 'Batuk kering', 'q1': 'Batuk berdahak', 'q2': 'Demam', 'q3': 'Pilek',
+        'q4': 'Hidung tersumbat', 'q5': 'Sesak napas', 'q6': 'Nyeri tenggorokan',
+        'q7': 'Sakit kepala', 'q8': 'Mual / muntah', 'q9': 'Nyeri dada',
+        'q10': 'Suara serak', 'q11': 'Kelelahan', 'q12': 'Keringat malam',
+        'q13': 'Nafsu makan turun', 'q14': 'Hilang penciuman', 'q15': 'Nyeri saat menelan'
     }
 
     buffer = io.BytesIO()
@@ -271,54 +254,35 @@ def download_pdf(id):
     styles = getSampleStyleSheet()
     elements = []
 
-    # HEADER
     elements.append(Paragraph("<b>HASIL DIAGNOSIS ISPA</b>", styles['Title']))
     elements.append(Spacer(1, 10))
-    elements.append(Paragraph(
-        f"Tanggal: {datetime.now().strftime('%d-%m-%Y %H:%M')}",
-        styles['Normal']
-    ))
+    elements.append(Paragraph(f"Tanggal: {datetime.now().strftime('%d-%m-%Y %H:%M')}", styles['Normal']))
     elements.append(Spacer(1, 20))
 
-    # DATA PASIEN
-    pasien = [
-        ["Nama", data['nama']],
-        ["Umur", str(data['umur'])]
-    ]
-
+    pasien = [["Nama", data['nama']], ["Umur", str(data['umur'])]]
     table_pasien = Table(pasien, colWidths=[100, 300])
     table_pasien.setStyle(TableStyle([
         ('GRID', (0,0), (-1,-1), 1, colors.black),
         ('BACKGROUND', (0,0), (-1,-1), colors.whitesmoke)
     ]))
-
     elements.append(Paragraph("<b>Data Pasien</b>", styles['Heading2']))
     elements.append(table_pasien)
     elements.append(Spacer(1, 20))
 
-    # GEJALA
     table_data = [["No", "Gejala", "Jawaban"]]
-
     for i, (key, value) in enumerate(jawaban.items()):
-        table_data.append([
-            i + 1,
-            pertanyaan.get(key, key),
-            "Ya" if value == 1 else "Tidak"
-        ])
+        table_data.append([i + 1, pertanyaan.get(key, key), "Ya" if value == 1 else "Tidak"])
 
     table = Table(table_data, colWidths=[50, 250, 100])
     table.setStyle(TableStyle([
         ('BACKGROUND', (0,0), (-1,0), colors.lightblue),
         ('GRID', (0,0), (-1,-1), 1, colors.black)
     ]))
-
     elements.append(Paragraph("<b>Data Gejala</b>", styles['Heading2']))
     elements.append(table)
     elements.append(Spacer(1, 20))
 
-    # HASIL
     warna = colors.red if data['hasil'] == "ISPA" else colors.green
-
     hasil_box = Table([[data['hasil']]], colWidths=[400])
     hasil_box.setStyle(TableStyle([
         ('BACKGROUND', (0,0), (-1,-1), warna),
@@ -326,15 +290,10 @@ def download_pdf(id):
         ('ALIGN', (0,0), (-1,-1), 'CENTER'),
         ('FONTSIZE', (0,0), (-1,-1), 16),
     ]))
-
     elements.append(Paragraph("<b>Hasil Diagnosis</b>", styles['Heading2']))
     elements.append(hasil_box)
     elements.append(Spacer(1, 15))
-
-    elements.append(Paragraph(
-        f"Tingkat Risiko: <b>{data['persen']}%</b>",
-        styles['Normal']
-    ))
+    elements.append(Paragraph(f"Tingkat Risiko: <b>{data['persen']}%</b>", styles['Normal']))
 
     doc.build(elements)
     buffer.seek(0)
@@ -358,7 +317,7 @@ def hapus(id):
         conn.commit()
         cursor.close()
     finally:
-        release_db_connection(conn)
+        conn.close() # 🔥 Pastikan koneksi langsung mati total
 
     return redirect('/riwayat')
 
@@ -378,6 +337,5 @@ def home_page():
     return render_template('home.html')
 
 
-# ================= RUN =================
 if __name__ == '__main__':
     app.run(debug=True)
