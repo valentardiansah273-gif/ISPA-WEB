@@ -22,11 +22,9 @@ model = joblib.load("model_saved/model_rf.pkl")
 fitur_urutan = joblib.load("model_saved/fitur_urutan.pkl")
 
 # ================= DATABASE (SUPABASE POOLER VIA SQLALCHEMY) =================
-DATABASE_URL = "postgresql://postgres:Val_27_03_200@db.ujnymohyappmueveidlq.supabase.co:6543/postgres"
+DATABASE_URL = "postgresql://usrcincbrlnv5ctctci3:IBfGxEleM4JgSh94b4slGSAjUVqw1K@bzv6ndii9goa0jgadd44-postgresql.services.clever-cloud.com:50013/bzv6ndii9goa0jgadd44"
 
-# Engine SQLAlchemy otomatis menangani masalah penerjemahan IP jaringannya
-engine = create_engine(DATABASE_URL)
-db = engine.raw_connection()
+db = psycopg2.connect(DATABASE_URL)
 
 
 # ================= HOME =================
