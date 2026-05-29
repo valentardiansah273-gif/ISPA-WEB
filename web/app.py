@@ -24,8 +24,7 @@ fitur_urutan = joblib.load("model_saved/fitur_urutan.pkl")
 # ================= DATABASE CONNECTION POOL =================
 DATABASE_URL = "postgresql://usrcincbrlnv5ctctci3:IBfGxEleM4JgSh94b4slGSAjUVqw1K@bzv6ndii9goa0jgadd44-postgresql.services.clever-cloud.com:50013/bzv6ndii9goa0jgadd44"
 
-# Membuat pool koneksi (min 1 koneksi, maks 20 koneksi bertingkat)
-db_pool = ThreadedConnectionPool(1, 20, DATABASE_URL)
+db_pool = ThreadedConnectionPool(1, 2, DATABASE_URL)
 
 # Fungsi pembantu untuk mengambil koneksi secara aman
 def get_db_connection():
