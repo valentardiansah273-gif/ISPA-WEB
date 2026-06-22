@@ -120,31 +120,37 @@ def predict():
 
     umur = int(umur)
 
+    # Tangkap jawaban skala asli 1-5 untuk disimpan ke DB
     jawaban_dict = {}
     for i in range(16):
-        val = int(request.form.get(f'q{i}', 0))
+        val = int(request.form.get(f'q{i}', 1))
         jawaban_dict[f'q{i}'] = val
+
+    # 🔥 PROSES KONVERSI: Mengubah skala 1-5 menjadi desimal 0.0 s/d 1.0 untuk kebutuhan Model Machine Learning
+    def norm_skala(nilai_skala):
+        return (float(nilai_skala) - 1.0) / 4.0
 
     data_map = {
         'Umur': umur,
-        'Batuk_Kering': jawaban_dict['q0'],
-        'Batuk_Berdahak': jawaban_dict['q1'],
-        'Demam': jawaban_dict['q2'],
-        'Pilek': jawaban_dict['q3'],
-        'Hidung_Tersumbat': jawaban_dict['q4'],
-        'Sesak_Napas': jawaban_dict['q5'],
-        'Nyeri_Tenggorokan': jawaban_dict['q6'],
-        'Sakit_Kepala': jawaban_dict['q7'],
-        'Mual_Muntah': jawaban_dict['q8'],
-        'Nyeri_Dada': jawaban_dict['q9'],
-        'Suara_Serak': jawaban_dict['q10'],
-        'Kelelahan': jawaban_dict['q11'],
-        'Berkeringat_Malam': jawaban_dict['q12'],
-        'Nafsu_Makan_Turun': jawaban_dict['q13'],
-        'Hilang_Penciuman': jawaban_dict['q14'],
-        'Nyeri_Saat_Menelan': jawaban_dict['q15'],
+        'Batuk_Kering': norm_skala(jawaban_dict['q0']),
+        'Batuk_Berdahak': norm_skala(jawaban_dict['q1']),
+        'Demam': norm_skala(jawaban_dict['q2']),
+        'Pilek': norm_skala(jawaban_dict['q3']),
+        'Hidung_Tersumbat': norm_skala(jawaban_dict['q4']),
+        'Sesak_Napas': norm_skala(jawaban_dict['q5']),
+        'Nyeri_Tenggorokan': norm_skala(jawaban_dict['q6']),
+        'Sakit_Kepala': norm_skala(jawaban_dict['q7']),
+        'Mual_Muntah': norm_skala(jawaban_dict['q8']),
+        'Nyeri_Dada': norm_skala(jawaban_dict['q9']),
+        'Suara_Serak': norm_skala(jawaban_dict['q10']),
+        'Kelelahan': norm_skala(jawaban_dict['q11']),
+        'Berkeringat_Malam': norm_skala(jawaban_dict['q12']),
+        'Nafsu_Makan_Turun': norm_skala(jawaban_dict['q13']),
+        'Hilang_Penciuman': norm_skala(jawaban_dict['q14']),
+        'Nyeri_Saat_Menelan': norm_skala(jawaban_dict['q15']),
     }
 
+    # Susun fitur berdasarkan aturan urutan file pkl Anda
     data = [data_map[f] for f in fitur_urutan]
 
     prob = model.predict_proba([data])[0][1]
@@ -249,6 +255,15 @@ def download_pdf(id):
         'q13': 'Nafsu makan turun', 'q14': 'Hilang penciuman', 'q15': 'Nyeri saat menelan'
     }
 
+    # Peta teks untuk merepresentasikan nilai skala 1-5 di file PDF
+    teks_skala = {
+        1: "1 (Tidak Ada)",
+        2: "2 (Ringan)",
+        3: "3 (Sedang)",
+        4: "4 (Parah)",
+        5: "5 (Sangat Berat)"
+    }
+
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(buffer)
     styles = getSampleStyleSheet()
@@ -269,11 +284,13 @@ def download_pdf(id):
     elements.append(table_pasien)
     elements.append(Spacer(1, 20))
 
-    table_data = [["No", "Gejala", "Jawaban"]]
+    table_data = [["No", "Gejala", "Tingkat Keparahan"]]
     for i, (key, value) in enumerate(jawaban.items()):
-        table_data.append([i + 1, pertanyaan.get(key, key), "Ya" if value == 1 else "Tidak"])
+        # Mengambil keterangan teks dari angka skala 1-5
+        keterangan = teks_skala.get(int(value), str(value))
+        table_data.append([i + 1, pertanyaan.get(key, key), keterangan])
 
-    table = Table(table_data, colWidths=[50, 250, 100])
+    table = Table(table_data, colWidths=[50, 230, 120])
     table.setStyle(TableStyle([
         ('BACKGROUND', (0,0), (-1,0), colors.lightblue),
         ('GRID', (0,0), (-1,-1), 1, colors.black)
