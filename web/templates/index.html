@@ -60,8 +60,10 @@
             position: sticky;
             top: 0;
             background: white;
-            padding: 10px 0;
+            padding: 15px 0;
             z-index: 100;
+            border-bottom: 1px solid #eee;
+            margin-bottom: 20px;
         }
 
         .progress-container {
@@ -83,6 +85,7 @@
             text-align: center;
             font-size: 14px;
             margin-top: 5px;
+            font-weight: bold;
         }
 
         .question {
@@ -98,13 +101,14 @@
         }
 
         .question p {
-            margin-bottom: 10px;
+            margin-bottom: 12px;
             font-weight: 600;
         }
 
+        /* TAMPILAN SKALA 1-5 */
         .options {
             display: flex;
-            gap: 10px;
+            gap: 8px;
         }
 
         .options label {
@@ -115,10 +119,13 @@
         .options span {
             display: block;
             text-align: center;
-            padding: 12px;
+            padding: 12px 5px;
             border-radius: 10px;
             background: #e0e0e0;
+            font-size: 13px;
+            font-weight: 500;
             transition: 0.2s;
+            border: 1px solid #ccc;
         }
 
         .options span:hover {
@@ -129,14 +136,40 @@
             display: none;
         }
 
+        /* Pewarnaan Gradasi Berdasarkan Tingkat Keparahan */
+        /* Skala 1: Tidak Ada (Hijau) */
         .options input[value="1"]:checked + span {
             background: #28a745;
             color: white;
+            border-color: #28a745;
         }
 
-        .options input[value="0"]:checked + span {
+        /* Skala 2: Ringan (Hijau Muda/Kuning) */
+        .options input[value="2"]:checked + span {
+            background: #8bc34a;
+            color: white;
+            border-color: #8bc34a;
+        }
+
+        /* Skala 3: Sedang (Jingga/Orange) */
+        .options input[value="3"]:checked + span {
+            background: #ff9800;
+            color: white;
+            border-color: #ff9800;
+        }
+
+        /* Skala 4: Parah (Merah Jingga) */
+        .options input[value="4"]:checked + span {
+            background: #e65100;
+            color: white;
+            border-color: #e65100;
+        }
+
+        /* Skala 5: Sangat Berat (Merah Tua) */
+        .options input[value="5"]:checked + span {
             background: #dc3545;
             color: white;
+            border-color: #dc3545;
         }
 
         button {
@@ -149,11 +182,21 @@
             font-size: 18px;
             border-radius: 12px;
             cursor: pointer;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(79,172,254,0.4);
+        }
+
+        button:hover {
+            background: linear-gradient(135deg, #00c6ff, #4facfe);
         }
 
         @media(max-width: 600px) {
             .options {
                 flex-direction: column;
+                gap: 5px;
+            }
+            .options span {
+                padding: 10px;
             }
         }
     </style>
@@ -166,7 +209,6 @@
 
     <form method="POST" action="/predict">
 
-        <!-- INPUT USER -->
         <div class="input-group">
             <label>👤 Nama Pasien</label>
             <input type="text" name="nama" required placeholder="Masukkan nama Anda">
@@ -177,7 +219,6 @@
             <input type="number" name="umur" required min="1" placeholder="Masukkan umur Anda">
         </div>
 
-        <!-- PROGRESS -->
         <div class="progress-wrapper">
             <div class="progress-container">
                 <div id="progress-bar"></div>
@@ -186,22 +227,22 @@
         </div>
 
         {% set pertanyaan = [
-        "Apakah Anda mengalami batuk kering?",
-        "Apakah Anda mengalami batuk berdahak?",
-        "Apakah Anda mengalami demam?",
-        "Apakah Anda mengalami pilek?",
-        "Apakah Anda mengalami hidung tersumbat?",
-        "Apakah Anda merasa sesak napas?",
-        "Apakah Anda mengalami nyeri tenggorokan?",
-        "Apakah Anda mengalami sakit kepala?",
-        "Apakah Anda mengalami mual atau muntah?",
-        "Apakah Anda mengalami nyeri dada?",
-        "Apakah suara Anda serak?",
-        "Apakah Anda merasa kelelahan?",
-        "Apakah Anda berkeringat di malam hari?",
-        "Apakah nafsu makan Anda menurun?",
-        "Apakah Anda kehilangan penciuman?",
-        "Apakah Anda mengalami nyeri saat menelan?"
+        "Bagaimana tingkat keparahan batuk kering Anda?",
+        "Bagaimana tingkat keparahan batuk berdahak Anda?",
+        "Bagaimana kondisi demam Anda?",
+        "Bagaimana kondisi pilek Anda?",
+        "Bagaimana tingkat keparahan hidung tersumbat Anda?",
+        "Seberapa parah sesak napas yang Anda rasakan?",
+        "Bagaimana rasa nyeri tenggorokan Anda?",
+        "Seberapa parah sakit kepala yang dialami?",
+        "Apakah Anda merasakan mual atau muntah?",
+        "Seberapa parah rasa nyeri dada Anda?",
+        "Bagaimana tingkat keparahan suara serak Anda?",
+        "Seberapa parah rasa kelelahan yang Anda rasakan?",
+        "Apakah Anda mengalami berkeringat di malam hari?",
+        "Seberapa jauh nafsu makan Anda menurun?",
+        "Bagaimana tingkat kehilangan penciuman Anda?",
+        "Seberapa parah rasa nyeri saat menelan?"
         ] %}
 
         {% for i in range(pertanyaan|length) %}
@@ -211,12 +252,27 @@
             <div class="options">
                 <label>
                     <input type="radio" name="q{{i}}" value="1" required>
-                    <span>Ya</span>
+                    <span>1<br>Tidak Ada</span>
                 </label>
 
                 <label>
-                    <input type="radio" name="q{{i}}" value="0" required>
-                    <span>Tidak</span>
+                    <input type="radio" name="q{{i}}" value="2" required>
+                    <span>2<br>Ringan</span>
+                </label>
+
+                <label>
+                    <input type="radio" name="q{{i}}" value="3" required>
+                    <span>3<br>Sedang</span>
+                </label>
+
+                <label>
+                    <input type="radio" name="q{{i}}" value="4" required>
+                    <span>4<br>Parah</span>
+                </label>
+
+                <label>
+                    <input type="radio" name="q{{i}}" value="5" required>
+                    <span>5<br>Sangat Berat</span>
                 </label>
             </div>
         </div>
@@ -250,6 +306,7 @@ function updateProgress() {
         answered + " / " + total + " terisi";
 }
 
+// Diubah agar mendeteksi semua tombol radio 1-5 yang baru
 document.querySelectorAll('input[type="radio"]').forEach((radio) => {
     radio.addEventListener("change", updateProgress);
 });
