@@ -103,6 +103,7 @@
         .question p {
             margin-bottom: 12px;
             font-weight: 600;
+            line-height: 1.5;
         }
 
         /* TAMPILAN SKALA 1-5 */
@@ -227,22 +228,22 @@
         </div>
 
         {% set pertanyaan = [
-        "Bagaimana tingkat keparahan batuk kering Anda?",
-        "Bagaimana tingkat keparahan batuk berdahak Anda?",
-        "Bagaimana kondisi demam Anda?",
-        "Bagaimana kondisi pilek Anda?",
-        "Bagaimana tingkat keparahan hidung tersumbat Anda?",
-        "Seberapa parah sesak napas yang Anda rasakan?",
-        "Bagaimana rasa nyeri tenggorokan Anda?",
-        "Seberapa parah sakit kepala yang dialami?",
-        "Apakah Anda merasakan mual atau muntah?",
-        "Seberapa parah rasa nyeri dada Anda?",
-        "Bagaimana tingkat keparahan suara serak Anda?",
-        "Seberapa parah rasa kelelahan yang Anda rasakan?",
-        "Apakah Anda mengalami berkeringat di malam hari?",
-        "Seberapa jauh nafsu makan Anda menurun?",
-        "Bagaimana tingkat kehilangan penciuman Anda?",
-        "Seberapa parah rasa nyeri saat menelan?"
+        "Batuk Kering (Batuk tanpa disertai lendir atau dahak)",
+        "Batuk Berdahak (Batuk produktif yang disertai dengan adanya lendir)",
+        "Peningkatan Suhu Tubuh / Demam (Merasa meriang, panas, atau menggigil)",
+        "Pilek / Rinore (Kondisi hidung memproduksi cairan encer secara terus-menerus)",
+        "Hidung Tersumbat (Kesulitan bernapas akibat kongesti atau penyumbatan hidung)",
+        "Dispnea / Sesak Napas (Merasa berat, megap-megap, atau kekurangan oksigen)",
+        "Faringitis / Nyeri Tenggorokan (Rasa gatal, perih, atau kering di tenggorokan)",
+        "Sakit Headache / Sefalgia (Rasa nyeri atau pusing berputar di area kepala)",
+        "Mual atau Muntah (Gangguan pencernaan atau rasa tidak nyaman pada lambung)",
+        "Nyeri Dada / Pleuritic Pain (Rasa tertekan atau nyeri tidur/tajam di dada saat bernapas)",
+        "Disfonia / Suara Serak (Perubahan kualitas suara menjadi parau atau mengecil)",
+        "Fatigue / Kelelahan Akut (Rasa lemas atau kehilangan energi yang amat sangat)",
+        "Hiperhidrosis Nokturnal (Berkeringat secara berlebihan di malam hari saat tidur)",
+        "Penurunan Nafsu Makan (Kehilangan selera makan secara drastis dalam beberapa hari terakhir)",
+        "Anosmia / Hilang Penciuman (Penurunan atau hilangnya kemampuan mendeteksi bau)",
+        "Odinofagia / Nyeri Saat Menelan (Rasa sakit di tenggorokan ketika menelan makanan atau air)"
         ] %}
 
         {% for i in range(pertanyaan|length) %}
@@ -306,7 +307,6 @@ function updateProgress() {
         answered + " / " + total + " terisi";
 }
 
-// Diubah agar mendeteksi semua tombol radio 1-5 yang baru
 document.querySelectorAll('input[type="radio"]').forEach((radio) => {
     radio.addEventListener("change", updateProgress);
 });
