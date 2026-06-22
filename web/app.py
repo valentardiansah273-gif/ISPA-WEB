@@ -126,7 +126,7 @@ def predict():
         val = int(request.form.get(f'q{i}', 1))
         jawaban_dict[f'q{i}'] = val
 
-    # 🔥 PROSES KONVERSI: Mengubah skala 1-5 menjadi desimal 0.0 s/d 1.0 untuk kebutuhan Model Machine Learning
+    # 🔥 PROSES KONVERSI: Mengubah skala 1-5 menjadi desimal 0.0 s/d 1.0 untuk kebutuhan Model
     def norm_skala(nilai_skala):
         return (float(nilai_skala) - 1.0) / 4.0
 
@@ -257,7 +257,7 @@ def download_pdf(id):
 
     # Peta teks untuk merepresentasikan nilai skala 1-5 di file PDF
     teks_skala = {
-        1: "1 (Tidak Ada)",
+        1: "1 (Tidak Anda)",
         2: "2 (Ringan)",
         3: "3 (Sedang)",
         4: "4 (Parah)",
@@ -286,7 +286,6 @@ def download_pdf(id):
 
     table_data = [["No", "Gejala", "Tingkat Keparahan"]]
     for i, (key, value) in enumerate(jawaban.items()):
-        # Mengambil keterangan teks dari angka skala 1-5
         keterangan = teks_skala.get(int(value), str(value))
         table_data.append([i + 1, pertanyaan.get(key, key), keterangan])
 
