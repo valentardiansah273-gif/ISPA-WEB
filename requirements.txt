@@ -31,5 +31,5 @@ tzdata==2026.2
 charset-normalizer==3.4.7
 defusedxml==0.7.1
 packaging==26.2
-psycopg2-binary==2.9.9
+psycopg2-binary
 SQLAlchemy

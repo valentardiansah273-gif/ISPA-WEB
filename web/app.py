@@ -10,6 +10,7 @@ import psycopg2.extras
 import joblib
 import json
 import io
+import re  # 🔥 tambahan validasi
 
 app = Flask(__name__)
 app.secret_key = "secret"
@@ -23,7 +24,6 @@ fitur_urutan = joblib.load("model_saved/fitur_urutan.pkl")
 # ================= DATABASE URL =================
 DATABASE_URL = "postgresql://usrcincbrlnv5ctctci3:IBfGxEleM4JgSh94b4slGSAjUVqw1K@bzv6ndii9goa0jgadd44-postgresql.services.clever-cloud.com:50013/bzv6ndii9goa0jgadd44"
 
-# Fungsi pembantu untuk membuat koneksi baru setiap kali dipanggil
 def get_db_connection():
     return psycopg2.connect(DATABASE_URL)
 
@@ -42,18 +42,51 @@ def form():
     return render_template('index.html')
 
 
+# ================= VALIDATION FUNCTION =================
+def validasi_password(password):
+    if len(password) < 6:
+        return "Password minimal 6 karakter!"
+    if not re.search(r"[A-Z]", password):
+        return "Harus ada huruf besar!"
+    if not re.search(r"[a-z]", password):
+        return "Harus ada huruf kecil!"
+    if not re.search(r"[0-9]", password):
+        return "Harus ada angka!"
+    return None
+
+
 # ================= REGISTER =================
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
+        confirm = request.form.get('confirm_password')  # 🔥 tambahan
 
-        hashed_password = generate_password_hash(password)
+        # 🔥 VALIDASI
+        if not username or not password:
+            return render_template('register.html', error="Semua field wajib diisi!")
+
+        if password != confirm:
+            return render_template('register.html', error="Konfirmasi password tidak cocok!")
+
+        error_pass = validasi_password(password)
+        if error_pass:
+            return render_template('register.html', error=error_pass)
 
         conn = get_db_connection()
         try:
             cursor = conn.cursor()
+
+            # 🔥 cek username sudah ada
+            cursor.execute("SELECT * FROM users WHERE username=%s", (username,))
+            existing = cursor.fetchone()
+
+            if existing:
+                return render_template('register.html', error="Username sudah digunakan!")
+
+            hashed_password = generate_password_hash(password)
+
             cursor.execute(
                 "INSERT INTO users (username, password) VALUES (%s, %s)",
                 (username, hashed_password)
@@ -61,7 +94,7 @@ def register():
             conn.commit()
             cursor.close()
         finally:
-            conn.close() # 🔥 Pastikan koneksi langsung mati total
+            conn.close()
 
         return redirect('/login')
 
@@ -75,6 +108,9 @@ def login():
         username = request.form.get('username')
         password = request.form.get('password')
 
+        if not username or not password:
+            return render_template('login.html', error="Isi semua field!")
+
         conn = get_db_connection()
         try:
             cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
@@ -85,7 +121,7 @@ def login():
             user = cursor.fetchone()
             cursor.close()
         finally:
-            conn.close() # 🔥 Pastikan koneksi langsung mati total
+            conn.close()
 
         if not user:
             return render_template('login.html', error="User tidak ditemukan!")
@@ -120,13 +156,11 @@ def predict():
 
     umur = int(umur)
 
-    # Tangkap jawaban skala asli 1-5 untuk disimpan ke DB
     jawaban_dict = {}
     for i in range(16):
         val = int(request.form.get(f'q{i}', 1))
         jawaban_dict[f'q{i}'] = val
 
-    # 🔥 PROSES KONVERSI: Mengubah skala 1-5 menjadi desimal 0.0 s/d 1.0 untuk kebutuhan Model
     def norm_skala(nilai_skala):
         return (float(nilai_skala) - 1.0) / 4.0
 
@@ -150,7 +184,6 @@ def predict():
         'Nyeri_Saat_Menelan': norm_skala(jawaban_dict['q15']),
     }
 
-    # Susun fitur berdasarkan aturan urutan file pkl Anda
     data = [data_map[f] for f in fitur_urutan]
 
     prob = model.predict_proba([data])[0][1]
@@ -170,7 +203,7 @@ def predict():
         conn.commit()
         cursor.close()
     finally:
-        conn.close() # 🔥 Pastikan koneksi langsung mati total
+        conn.close()
 
     return render_template(
         'result.html',
@@ -197,7 +230,7 @@ def riwayat():
         data = cursor.fetchall()
         cursor.close()
     finally:
-        conn.close() # 🔥 Pastikan koneksi langsung mati total
+        conn.close()
 
     return render_template('riwayat.html', data=data)
 
@@ -215,7 +248,7 @@ def detail(id):
         data = cursor.fetchone()
         cursor.close()
     finally:
-        conn.close() # 🔥 Pastikan koneksi langsung mati total
+        conn.close()
 
     if not data:
         return "Data tidak ditemukan!"
@@ -232,7 +265,6 @@ def detail(id):
 # ================= DOWNLOAD PDF =================
 @app.route('/download_pdf/<int:id>')
 def download_pdf(id):
-
     conn = get_db_connection()
     try:
         cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
@@ -240,7 +272,7 @@ def download_pdf(id):
         data = cursor.fetchone()
         cursor.close()
     finally:
-        conn.close() # 🔥 Pastikan koneksi langsung mati total
+        conn.close()
 
     if not data:
         return "Data tidak ditemukan!"
@@ -255,7 +287,6 @@ def download_pdf(id):
         'q13': 'Nafsu makan turun', 'q14': 'Hilang penciuman', 'q15': 'Nyeri saat menelan'
     }
 
-    # Peta teks untuk merepresentasikan nilai skala 1-5 di file PDF
     teks_skala = {
         1: "1 (Tidak Anda)",
         2: "2 (Ringan)",
@@ -333,7 +364,7 @@ def hapus(id):
         conn.commit()
         cursor.close()
     finally:
-        conn.close() # 🔥 Pastikan koneksi langsung mati total
+        conn.close()
 
     return redirect('/riwayat')
 
