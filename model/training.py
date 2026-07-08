@@ -85,3 +85,8 @@ print("\nClassification Report:\n", classification_report(y_test, y_pred))
 # =========================
 joblib.dump(best_model, 'model_saved/model_rf.pkl')
 print("\nProses selesai. Model, Scaler, dan Urutan Fitur tersimpan.")
+
+importances = best_model.feature_importances_
+feature_imp = pd.Series(importances, index=fitur_urutan).sort_values(ascending=False)
+print("\n=== FITUR PALING BERPENGARUH ===")
+print(feature_imp)
