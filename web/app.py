@@ -148,25 +148,23 @@ def logout():
 @app.route('/predict', methods=['POST'])
 def predict():
     try:
-        # Ambil input dari form sesuai urutan fitur
+        # Ambil input sesuai urutan fitur
         input_data = []
-
+        
         for fitur in fitur_urutan:
             nilai = request.form.get(fitur)
 
             if nilai is None or nilai == "":
-                nilai = 0  # default kalau kosong
+                nilai = 0
             else:
                 nilai = float(nilai)
 
             input_data.append(nilai)
 
-        # Ubah ke numpy array
+        # Ubah ke array
         input_array = np.array(input_data).reshape(1, -1)
 
-        # =========================
-        # WAJIB: SCALING
-        # =========================
+        # SCALING (WAJIB)
         input_scaled = scaler.transform(input_array)
 
         # Prediksi
@@ -186,8 +184,7 @@ def predict():
         )
 
     except Exception as e:
-        # Menangkap error jika ada kegagalan proses
-        return f"Terjadi error: {str(e)}"
+        return f"Error: {str(e)}"
     
 # ================= RIWAYAT =================
 @app.route('/riwayat')
