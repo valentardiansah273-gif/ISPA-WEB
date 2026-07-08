@@ -5,7 +5,9 @@
     <title>Prediksi Risiko ISPA</title>
 
     <style>
-        * { box-sizing: border-box; }
+        * {
+            box-sizing: border-box;
+        }
 
         body {
             font-family: 'Segoe UI', sans-serif;
@@ -24,10 +26,21 @@
             box-shadow: 0px 10px 30px rgba(0,0,0,0.2);
         }
 
-        h2 { text-align: center; color: #333; }
+        h2 {
+            text-align: center;
+            color: #333;
+        }
 
-        .input-group { margin-bottom: 15px; }
-        .input-group label { font-weight: 600; display: block; margin-bottom: 5px; }
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        .input-group label {
+            font-weight: 600;
+            display: block;
+            margin-bottom: 5px;
+        }
+
         .input-group input {
             width: 100%;
             padding: 12px;
@@ -36,7 +49,6 @@
             outline: none;
         }
 
-        /* PROGRESS BAR */
         .progress-wrapper {
             position: sticky; top: 0; background: white; padding: 15px 0; z-index: 100;
             border-bottom: 1px solid #eee; margin-bottom: 20px;
@@ -50,7 +62,6 @@
 
         .question { margin-bottom: 18px; padding: 18px; border-radius: 12px; background: #f9f9f9; }
         
-        /* SKALA 1-5 */
         .options { display: flex; gap: 8px; }
         .options label { flex: 1; cursor: pointer; }
         .options span {
@@ -65,14 +76,13 @@
         .options input[value="4"]:checked + span { background: #e65100; color: white; }
         .options input[value="5"]:checked + span { background: #dc3545; color: white; }
 
-        /* BUTTONS */
         button {
             width: 100%; padding: 15px; margin-top: 20px;
             background: #007bff; border: none; color: white; 
             font-size: 18px; border-radius: 12px; cursor: pointer; font-weight: bold;
         }
-        button:disabled { background: #ccc; cursor: not-allowed; }
 
+        /* TOMBOL TAMBAHAN */
         .btn-back {
             display: block; width: 100%; padding: 15px; margin-top: 10px;
             background: #6c757d; color: white; text-align: center;
@@ -86,7 +96,7 @@
 <div class="container">
     <h2>🩺 Form Prediksi Risiko ISPA</h2>
 
-    <form method="POST" action="/predict" onsubmit="this.querySelector('button').disabled=true; this.querySelector('button').innerText='Memproses...';">
+    <form method="POST" action="/predict">
         
         <div class="input-group">
             <label>👤 Nama Pasien</label>
@@ -125,22 +135,23 @@
         {% endfor %}
 
         <button type="submit">🔍 Prediksi Sekarang</button>
+        
         <a href="/" class="btn-back">⬅ Kembali ke Home</a>
     </form>
 </div>
 
 <script>
-    const total = 16;
-    function updateProgress() {
-        let answered = 0;
-        for (let i = 0; i < total; i++) {
-            if (document.querySelector('input[name="q' + i + '"]:checked')) answered++;
-        }
-        let percent = (answered / total) * 100;
-        document.getElementById("progress-bar").style.width = percent + "%";
-        document.getElementById("progress-text").innerText = answered + " / " + total + " terisi";
+const total = 16;
+function updateProgress() {
+    let answered = 0;
+    for (let i = 0; i < total; i++) {
+        if (document.querySelector('input[name="q' + i + '"]:checked')) answered++;
     }
-    document.querySelectorAll('input[type="radio"]').forEach(r => r.addEventListener("change", updateProgress));
+    let percent = (answered / total) * 100;
+    document.getElementById("progress-bar").style.width = percent + "%";
+    document.getElementById("progress-text").innerText = answered + " / " + total + " terisi";
+}
+document.querySelectorAll('input[type="radio"]').forEach(r => r.addEventListener("change", updateProgress));
 </script>
 
 </body>
