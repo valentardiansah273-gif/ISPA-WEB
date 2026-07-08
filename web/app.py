@@ -147,47 +147,48 @@ def logout():
 # ================= PREDICT =================
 @app.route('/predict', methods=['POST'])
 def predict():
-try:
-    # Ambil input dari form sesuai urutan fitur
-    input_data = []
+    try:
+        # Ambil input dari form sesuai urutan fitur
+        input_data = []
 
-    for fitur in fitur_urutan:
-        nilai = request.form.get(fitur)
+        for fitur in fitur_urutan:
+            nilai = request.form.get(fitur)
 
-        if nilai is None or nilai == "":
-            nilai = 0  # default kalau kosong
+            if nilai is None or nilai == "":
+                nilai = 0  # default kalau kosong
+            else:
+                nilai = float(nilai)
+
+            input_data.append(nilai)
+
+        # Ubah ke numpy array
+        input_array = np.array(input_data).reshape(1, -1)
+
+        # =========================
+        # WAJIB: SCALING
+        # =========================
+        input_scaled = scaler.transform(input_array)
+
+        # Prediksi
+        hasil = model.predict(input_scaled)[0]
+        probabilitas = model.predict_proba(input_scaled)[0]
+
+        # Mapping hasil
+        if hasil == 1:
+            diagnosis = "Terindikasi ISPA"
         else:
-            nilai = float(nilai)
+            diagnosis = "Tidak Terindikasi ISPA"
 
-        input_data.append(nilai)
+        return render_template(
+            'index.html',
+            prediction_text=diagnosis,
+            probability=round(max(probabilitas) * 100, 2)
+        )
 
-    # Ubah ke numpy array
-    input_array = np.array(input_data).reshape(1, -1)
-
-    # =========================
-    # WAJIB: SCALING (INI YANG SERING LUPA)
-    # =========================
-    input_scaled = scaler.transform(input_array)
-
-    # Prediksi
-    hasil = model.predict(input_scaled)[0]
-    probabilitas = model.predict_proba(input_scaled)[0]
-
-    # Mapping hasil (opsional, sesuaikan label kamu)
-    if hasil == 1:
-        diagnosis = "Terindikasi ISPA"
-    else:
-        diagnosis = "Tidak Terindikasi ISPA"
-
-    return render_template(
-        'index.html',
-        prediction_text=diagnosis,
-        probability=round(max(probabilitas) * 100, 2)
-    )
-
-except Exception as e:
-    return f"Terjadi error: {str(e)}"
-
+    except Exception as e:
+        # Menangkap error jika ada kegagalan proses
+        return f"Terjadi error: {str(e)}"
+    
 # ================= RIWAYAT =================
 @app.route('/riwayat')
 def riwayat():
