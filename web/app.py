@@ -12,16 +12,19 @@ import json
 import io
 import re  
 import numpy as np
+import pandas as pd
 
 app = Flask(__name__)
 app.secret_key = "secret"
 
 # ================= MODEL =================
 model = joblib.load("model_saved/model_rf.pkl")
-
-# 🔥 load urutan fitur (WAJIB)
+importance = joblib.load("model_saved/importance.pkl")
 fitur_urutan = joblib.load("model_saved/fitur_urutan.pkl")
 scaler = joblib.load("model_saved/scaler.pkl")
+
+importance = joblib.load("model_saved/importance.pkl")
+top3 = importance.head(3)["Fitur"].tolist()
 
 # ================= DATABASE URL =================
 DATABASE_URL = "postgresql://usrcincbrlnv5ctctci3:IBfGxEleM4JgSh94b4slGSAjUVqw1K@bzv6ndii9goa0jgadd44-postgresql.services.clever-cloud.com:50013/bzv6ndii9goa0jgadd44"
@@ -148,57 +151,93 @@ def logout():
 @app.route('/predict', methods=['POST'])
 def predict():
     try:
-        # =========================
-        # 1. PENGAMBILAN DATA
-        # =========================
-        # Pastikan umur adalah float
+        if 'username' not in session:
+            return redirect('/login')
+
+        # ================= INPUT =================
+        nama = request.form.get("nama")
         umur = float(request.form.get("umur", 0))
 
-        # Ambil gejala q0-q15
+        # fungsi konversi 1–5 ➝ 0–1
+        def convert_1_5_to_0_1(x):
+            return (x - 1) / 4
+
         gejala = []
+        jawaban_dict = {}
+
         for i in range(16):
             nilai = request.form.get(f"q{i}")
-            # Jika input kosong, beri nilai 0
-            val = float(nilai) if nilai and nilai != "" else 0.0
-            gejala.append(val)
+            val = float(nilai) if nilai else 1.0
 
-        # Gabungkan (URUTAN WAJIB SAMA DENGAN SAAT TRAINING)
+            # konversi
+            val_konversi = convert_1_5_to_0_1(val)
+
+            gejala.append(val_konversi)
+            jawaban_dict[f"q{i}"] = val  # simpan asli
+
+        # ================= DATAFRAME =================
         input_data = [umur] + gejala
+        input_df = pd.DataFrame([input_data], columns=fitur_urutan)
 
-        # Debugging (lihat log Vercel untuk memastikan data masuk dengan benar)
-        print("INPUT DATA:", input_data)
+        # ================= SCALING =================
+        input_scaled = scaler.transform(input_df)
 
-        # =========================
-        # 2. TRANSFORM & PREDICT
-        # =========================
-        # Reshape menjadi 2D array (1 baris, N kolom)
-        input_array = np.array(input_data).reshape(1, -1)
-        
-        # Scaling (Gunakan scaler yang dimuat dari file .pkl)
-        input_scaled = scaler.transform(input_array)
-
-        # Prediksi
+        # ================= PREDIKSI =================
         hasil = model.predict(input_scaled)[0]
         probabilitas = model.predict_proba(input_scaled)[0]
 
-        # =========================
-        # 3. OUTPUT
-        # =========================
-        diagnosis = "Terindikasi ISPA" if hasil == 1 else "Tidak Terindikasi ISPA"
-        
-        # Ambil probabilitas kelas positif (biasanya index 1)
-        # Jika model biner, max() mungkin tidak tepat jika ingin akurasi kelas tertentu
-        prob_persen = round(float(probabilitas[1]) * 100, 2)
+        # 🔥 FIX PROBABILITAS (ANTI 0%)
+        kelas = model.classes_
+        idx_ispa = list(kelas).index(1)
+        persen = round(float(probabilitas[idx_ispa]) * 100, 2)
 
+        diagnosis = "ISPA" if hasil == 1 else "Tidak ISPA"
+
+        # ================= DEBUG =================
+        print("=== DEBUG WEB ===")
+        print("Input:", input_df)
+        print("Scaled:", input_scaled)
+        print("Prob:", probabilitas)
+        print("Classes:", kelas)
+        print("Persen:", persen)
+
+        # ================= SIMPAN DB =================
+        conn = get_db_connection()
+        try:
+            cursor = conn.cursor()
+            cursor.execute("""
+                INSERT INTO riwayat (username, nama, umur, jawaban, hasil, persen)
+                VALUES (%s, %s, %s, %s, %s, %s)
+            """, (
+                session['username'],
+                nama,
+                umur,
+                json.dumps(jawaban_dict),
+                diagnosis,
+                persen
+            ))
+            conn.commit()
+            cursor.close()
+        finally:
+            conn.close()
+
+        # ================= RETURN =================
         return render_template(
-            'index.html',
-            prediction_text=diagnosis,
-            probability=prob_persen
+        "result.html",
+        persen=round(probabilitas[1] * 100, 2),
+        nama=nama,
+        umur=umur,
+        top3=top3,
+        debug_input=input_df.to_dict(),
         )
 
     except Exception as e:
-        # Jika terjadi error, pesan akan tampil di browser
-        return f"Terjadi kesalahan saat memproses data: {str(e)}"
+        print("ERROR:", e)
+        print("=== CEK MODEL ===")
+        print("Classes:", model.classes_)
+        print("Probabilitas:", probabilitas)
+        print("Prediksi:", hasil)
+        return f"<h2>Error: {str(e)}</h2>"
     
 # ================= RIWAYAT =================
 @app.route('/riwayat')

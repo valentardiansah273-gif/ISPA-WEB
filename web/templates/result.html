@@ -1,118 +1,68 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="UTF-8">
-<title>Hasil Prediksi</title>
-
-<style>
-* { box-sizing: border-box; }
-
-body {
-    font-family: 'Segoe UI', sans-serif;
-    background: linear-gradient(135deg, #4facfe, #00f2fe);
-    margin: 0;
-}
-
-.container {
-    width: 90%;
-    max-width: 420px;
-    margin: 60px auto;
-    background: white;
-    padding: 25px;
-    border-radius: 20px;
-    text-align: center;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-}
-
-.nama {
-    margin-bottom: 15px;
-    color: #555;
-}
-
-/* 🔵 CIRCLE */
-.circle {
-    position: relative;
-    width: 180px;
-    height: 180px;
-    margin: 20px auto;
-}
-
-.circle svg {
-    transform: rotate(-90deg);
-}
-
-.circle circle {
-    fill: none;
-    stroke-width: 12;
-    stroke-linecap: round;
-}
-
-.bg { stroke: #eee; }
-
-.progress {
-    stroke-dasharray: 440;
-    stroke-dashoffset: 440;
-}
-
-.value {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    font-size: 30px;
-    font-weight: bold;
-}
-
-/* STATUS */
-.status {
-    font-size: 20px;
-    margin-top: 10px;
-    font-weight: bold;
-}
-
-.info {
-    font-size: 14px;
-    margin-top: 5px;
-}
-
-/* SARAN */
-.saran {
-    text-align: left;
-    margin-top: 15px;
-    padding: 15px;
-    border-radius: 12px;
-    background: #f5f5f5;
-    font-size: 14px;
-}
-
-/* BUTTON */
-.btn {
-    display: block;
-    width: 100%;
-    padding: 14px;
-    margin-top: 12px;
-    border-radius: 12px;
-    text-decoration: none;
-    color: white;
-}
-
-.btn-home { background: #28a745; }
-.btn-history { background: #333; }
-</style>
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hasil Prediksi ISPA</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background: linear-gradient(135deg, #e0f7fa, #80deea); 
+            margin: 0; 
+            padding: 20px; 
+        }
+        .container { 
+            width: 100%; 
+            max-width: 450px; 
+            margin: 20px auto; 
+            background: #ffffff; 
+            padding: 30px; 
+            border-radius: 20px; 
+            text-align: center; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1); 
+        }
+        h2 { color: #333; margin-bottom: 20px; }
+        .pasien-info { 
+            background: #f9f9f9; 
+            padding: 10px; 
+            border-radius: 10px; 
+            margin-bottom: 20px; 
+            color: #666; 
+        }
+        /* Lingkaran Progress */
+        .circle { position: relative; width: 180px; height: 180px; margin: 20px auto; }
+        .circle svg { transform: rotate(-90deg); }
+        .circle circle { fill: none; stroke-width: 12; stroke-linecap: round; }
+        .bg { stroke: #eee; }
+        .progress { stroke-dasharray: 440; stroke-dashoffset: 440; transition: stroke-dashoffset 1s ease; }
+        .value { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 32px; font-weight: bold; color: #333; }
+        
+        /* Status & Saran */
+        .status { font-size: 22px; font-weight: bold; margin-top: 10px; }
+        .info { font-size: 15px; color: #777; margin-bottom: 20px; }
+        .gejala-box { text-align: left; background: #fff3e0; padding: 15px; border-radius: 12px; margin-bottom: 20px; }
+        .gejala-box h3 { margin-top: 0; font-size: 16px; color: #e65100; }
+        .gejala-box ul { padding-left: 20px; margin: 5px 0 0 0; }
+        .saran { text-align: left; padding: 15px; border-radius: 12px; background: #f1f8e9; font-size: 14px; color: #2e7d32; }
+        
+        /* Tombol */
+        .btn { display: block; width: 100%; padding: 12px; margin-top: 10px; border-radius: 10px; text-decoration: none; color: white; font-weight: bold; transition: opacity 0.3s; }
+        .btn:hover { opacity: 0.9; }
+        .btn-home { background: #007bff; }
+        .btn-history { background: #343a40; }
+    </style>
 </head>
 <body>
 
 <div class="container">
     <h2>🩺 Hasil Prediksi</h2>
 
-    <!-- ✅ FIX NAMA (ambil dari Flask dulu, fallback ke session) -->
-    <div class="nama">
-    Pasien: <b>{{ nama if nama else session.get('username', 'User') }}</b><br>
-    Umur: <b>{{ umur }}</b> tahun
+    <div class="pasien-info">
+        Pasien: <b>{{ nama if nama else session.get('username', 'User') }}</b><br>
+        Umur: <b>{{ umur }}</b> tahun
     </div>
 
-    <!-- 🔵 CIRCLE -->
     <div class="circle">
         <svg width="180" height="180">
             <circle cx="90" cy="90" r="70" class="bg"></circle>
@@ -124,87 +74,55 @@ body {
     <div class="status" id="statusText"></div>
     <div class="info" id="infoText"></div>
 
-    <div class="saran" id="saranBox"></div>
-
-    <a href="/" class="btn btn-home">🏠 Home</a>
-    <a href="/riwayat" class="btn btn-history">📊 Riwayat</a>
-    <div style="margin-top: 20px; font-size: 10px; color: #888; text-align: left;">
-    Debug Input: {{ debug_input }}
+    <div class="gejala-box">
+        <h3>🔍 Gejala Paling Berpengaruh:</h3>
+        <ul>
+            {% for f in top3 %}
+                <li>{{ f }}</li>
+            {% endfor %}
+        </ul>
     </div>
-    
+
+    <div id="saranBox" class="saran"></div>
+
+    <a href="/" class="btn btn-home">🏠 Kembali ke Home</a>
+    <a href="/riwayat" class="btn btn-history">📊 Lihat Riwayat</a>
 </div>
 
 <script>
+    let persen = Number("{{ persen | default(0) }}");
+    const circle = document.getElementById("progressCircle");
+    const text = document.getElementById("percentText");
+    const statusText = document.getElementById("statusText");
+    const infoText = document.getElementById("infoText");
+    const saranBox = document.getElementById("saranBox");
 
-/* ✅ FIX: pastikan persen selalu angka */
-/* CARA BENAR: Gunakan tanda kutip agar dibaca sebagai string/angka */
-let persen = Number("{{ persen | default(0) }}");
+    const radius = 70;
+    const keliling = 2 * Math.PI * radius;
 
-let circle = document.getElementById("progressCircle");
-let text = document.getElementById("percentText");
-let statusText = document.getElementById("statusText");
-let infoText = document.getElementById("infoText");
-let saranBox = document.getElementById("saranBox");
+    circle.style.strokeDasharray = keliling;
+    circle.style.strokeDashoffset = keliling;
 
-let radius = 70;
-let keliling = 2 * Math.PI * radius;
+    let warna, status, info, saran;
 
-circle.style.strokeDasharray = keliling;
-circle.style.strokeDashoffset = keliling;
+    if (persen <= 40) {
+        warna = "#28a745"; status = "🟢 Aman"; info = "Risiko rendah";
+        saran = "<b>💡 Saran:</b><ul><li>Jaga pola hidup sehat</li><li>Istirahat cukup</li><li>Makan bergizi</li></ul>";
+    } else if (persen <= 70) {
+        warna = "#ffc107"; status = "🟡 Waspada"; info = "Perhatikan kondisi tubuh";
+        saran = "<b>⚠️ Saran:</b><ul><li>Kurangi aktivitas berat</li><li>Perbanyak minum air</li><li>Jika berlanjut, periksa ke dokter</li></ul>";
+    } else {
+        warna = "#ff2e2e"; status = "🔴 Risiko Tinggi ISPA"; info = "Segera ke dokter";
+        saran = "<b>🩺 Saran:</b><ul><li>Segera ke fasilitas kesehatan</li><li>Istirahat total</li><li>Wajib pakai masker</li></ul>";
+    }
 
-let warna, status, info, saran;
-
-/* 🔥 LEVEL LOGIC */
-if (persen <= 40) {
-    warna = "#28a745";
-    status = "🟢 Aman";
-    info = "Risiko rendah";
-    saran = `
-        <b>💡 Saran:</b>
-        <ul>
-            <li>Jaga pola hidup sehat</li>
-            <li>Istirahat cukup</li>
-            <li>Makan bergizi</li>
-        </ul>`;
-}
-else if (persen <= 70) {
-    warna = "#ffc107";
-    status = "🟡 Waspada";
-    info = "Perhatikan kondisi tubuh";
-    saran = `
-        <b>⚠️ Saran:</b>
-        <ul>
-            <li>Kurangi aktivitas berat</li>
-            <li>Perbanyak minum air</li>
-            <li>Jika berlanjut, periksa dokter</li>
-        </ul>`;
-}
-else {
-    warna = "#ff2e2e";
-    status = "🔴 Risiko Tinggi ISPA";
-    info = "Segera ke dokter";
-    saran = `
-        <b>🩺 Saran:</b>
-        <ul>
-            <li>Segera ke fasilitas kesehatan</li>
-            <li>Istirahat total</li>
-            <li>Pakai masker</li>
-        </ul>`;
-}
-
-/* 🎯 ANIMASI */
-let offset = keliling - (persen / 100) * keliling;
-
-circle.style.stroke = warna;
-circle.style.transition = "stroke-dashoffset 1s ease";
-circle.style.strokeDashoffset = offset;
-
-/* 🎯 TEXT */
-text.innerHTML = persen + "%";
-statusText.innerHTML = status;
-infoText.innerHTML = info;
-saranBox.innerHTML = saran;
-
+    circle.style.stroke = warna;
+    circle.style.strokeDashoffset = keliling - (persen / 100) * keliling;
+    text.innerHTML = persen + "%";
+    statusText.innerHTML = status;
+    statusText.style.color = warna;
+    infoText.innerHTML = info;
+    saranBox.innerHTML = saran;
 </script>
 
 </body>

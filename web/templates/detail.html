@@ -1,194 +1,107 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="UTF-8">
-<title>Detail</title>
-
-<style>
-body {
-    font-family: 'Segoe UI';
-    background: linear-gradient(135deg, #4facfe, #00f2fe);
-    margin: 0;
-}
-
-.container {
-    width: 90%;
-    max-width: 600px;
-    margin: 40px auto;
-    background: white;
-    padding: 25px;
-    border-radius: 20px;
-    text-align: center;
-}
-
-/* LOGO */
-.logo {
-    width: 70px;
-    margin-bottom: 10px;
-}
-
-/* CIRCLE */
-.circle {
-    position: relative;
-    width: 180px;
-    height: 180px;
-    margin: 20px auto;
-}
-
-svg {
-    transform: rotate(-90deg);
-}
-
-circle {
-    fill: none;
-    stroke-width: 12;
-}
-
-.bg { stroke: #eee; }
-
-.progress {
-    stroke-dasharray: 440;
-    stroke-dashoffset: 440;
-    stroke-linecap: round;
-}
-
-/* TEXT DALAM CIRCLE */
-.value {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    font-size: 28px;
-    font-weight: bold;
-}
-
-/* STATUS */
-.status {
-    font-size: 20px;
-    font-weight: bold;
-}
-
-/* DATA */
-.info {
-    text-align: left;
-    margin-top: 15px;
-}
-
-/* LIST */
-ul {
-    text-align: left;
-    margin-top: 10px;
-}
-
-li {
-    margin-bottom: 6px;
-}
-
-/* BUTTON */
-.btn {
-    display: block;
-    margin-top: 15px;
-    padding: 12px;
-    border-radius: 10px;
-    text-decoration: none;
-    color: white;
-}
-
-.download { background: #007bff; }
-.back { background: #333; }
-
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detail Hasil Diagnosis</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #4facfe, #00f2fe); margin: 0; padding: 20px; }
+        .container { width: 100%; max-width: 500px; margin: 20px auto; background: white; padding: 30px; border-radius: 20px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.15); }
+        .logo { width: 60px; margin-bottom: 10px; }
+        .circle { position: relative; width: 160px; height: 160px; margin: 20px auto; }
+        svg { transform: rotate(-90deg); }
+        circle { fill: none; stroke-width: 12; }
+        .bg { stroke: #eee; }
+        .progress { stroke-dasharray: 440; stroke-dashoffset: 440; stroke-linecap: round; transition: stroke-dashoffset 1s ease; }
+        .value { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 28px; font-weight: bold; }
+        .status { font-size: 20px; font-weight: bold; margin-bottom: 20px; }
+        .pasien-info { background: #f9f9f9; padding: 15px; border-radius: 12px; margin-bottom: 25px; text-align: left; }
+        .gejala-list { text-align: left; margin: 0; padding: 0; list-style: none; }
+        .gejala-item { margin-bottom: 18px; }
+        .bar-container { background: #eee; border-radius: 10px; height: 8px; width: 100%; margin-top: 6px; overflow: hidden; }
+        /* Menggunakan kelas statis, lebar diatur via JavaScript agar tidak error di editor */
+        .bar-fill { background: #007bff; height: 8px; border-radius: 10px; transition: width 0.5s ease; }
+        .btn { display: block; margin-top: 15px; padding: 12px; border-radius: 10px; text-decoration: none; color: white; font-weight: bold; }
+        .download { background: #28a745; }
+        .back { background: #333; }
+    </style>
 </head>
 
 <body>
 
 <div class="container">
-
-    <!-- LOGO -->
     <img src="https://cdn-icons-png.flaticon.com/512/2966/2966480.png" class="logo">
-
     <h2>Detail Hasil</h2>
 
-    <!-- CIRCLE -->
     <div class="circle">
-        <svg width="180" height="180">
-            <circle cx="90" cy="90" r="70" class="bg"></circle>
-            <circle cx="90" cy="90" r="70" class="progress" id="circle"></circle>
+        <svg width="160" height="160">
+            <circle cx="80" cy="80" r="70" class="bg"></circle>
+            <circle cx="80" cy="80" r="70" class="progress" id="circle"></circle>
         </svg>
         <div class="value" id="text">0%</div>
     </div>
 
     <div class="status" id="status"></div>
 
-    <!-- DATA -->
-    <div class="info">
-        <p><b>Nama:</b> {{ data.nama }}</p>
-        <p><b>Umur:</b> {{ data.umur }}</p>
+    <div class="pasien-info">
+        <b>Nama:</b> {{ data.nama }}<br>
+        <b>Umur:</b> {{ data.umur }} tahun
     </div>
 
-    <!-- PERTANYAAN -->
     {% set pertanyaan = {
-        'q0': 'Apakah Anda mengalami batuk kering?',
-        'q1': 'Apakah Anda mengalami batuk berdahak?',
-        'q2': 'Apakah Anda mengalami demam?',
-        'q3': 'Apakah Anda mengalami pilek?',
-        'q4': 'Apakah hidung Anda tersumbat?',
-        'q5': 'Apakah Anda mengalami sesak napas?',
-        'q6': 'Apakah Anda mengalami nyeri tenggorokan?',
-        'q7': 'Apakah Anda mengalami sakit kepala?',
-        'q8': 'Apakah Anda mengalami mual atau muntah?',
-        'q9': 'Apakah Anda mengalami nyeri dada?',
-        'q10': 'Apakah suara Anda serak?',
-        'q11': 'Apakah Anda merasa kelelahan?',
-        'q12': 'Apakah Anda berkeringat di malam hari?',
-        'q13': 'Apakah nafsu makan Anda menurun?',
-        'q14': 'Apakah Anda kehilangan penciuman?',
-        'q15': 'Apakah Anda merasa nyeri saat menelan?',
-        'q16': 'Apakah Anda mengalami gejala tambahan lainnya?'
+        'q0': 'Batuk kering', 'q1': 'Batuk berdahak', 'q2': 'Demam', 'q3': 'Pilek',
+        'q4': 'Hidung tersumbat', 'q5': 'Sesak napas', 'q6': 'Nyeri tenggorokan',
+        'q7': 'Sakit kepala', 'q8': 'Mual / muntah', 'q9': 'Nyeri dada',
+        'q10': 'Suara serak', 'q11': 'Kelelahan', 'q12': 'Keringat malam',
+        'q13': 'Nafsu makan turun', 'q14': 'Hilang penciuman', 'q15': 'Nyeri saat menelan'
     } %}
 
-    <h3>Jawaban:</h3>
-    <ul>
-    {% for key, val in jawaban.items() %}
-        <li>
-            {{ pertanyaan[key] if key in pertanyaan else key }} :
-            <b>{{ 'Ya' if val==1 else 'Tidak' }}</b>
-        </li>
-    {% endfor %}
-    </ul>
+    <div class="gejala-list">
+        <h3>Tingkat Keparahan Gejala:</h3>
+        {% for key, val in jawaban.items() %}
+            <div class="gejala-item">
+                <div style="font-size: 14px; font-weight: 500;">{{ pertanyaan[key] if key in pertanyaan else key }}</div>
+                <div class="bar-container">
+                    <!-- Menghilangkan inline style Jinja2 untuk menghindari error editor -->
+                    <div class="bar-fill" data-width="{{ (val | int) * 20 }}"></div>
+                </div>
+                <small style="color: #666;">Tingkat: {{ val | int }}/5</small>
+            </div>
+        {% endfor %}
+    </div>
 
-    <a href="/download_pdf/{{ data.id }}" class="btn download">
-        ⬇ Download PDF
-    </a>
-
-    <a href="/riwayat" class="btn back">
-        ⬅ Kembali
-    </a>
-
+    <a href="/download_pdf/{{ data.id }}" class="btn download">⬇ Download PDF</a>
+    <a href="/riwayat" class="btn back">⬅ Kembali ke Riwayat</a>
 </div>
 
 <script>
-let persen = {{ data.persen | tojson }};
-let circle = document.getElementById("circle");
-let text = document.getElementById("text");
-let status = document.getElementById("status");
+    // Atur lebar bar secara aman via JS
+    document.querySelectorAll('.bar-fill').forEach(el => {
+        el.style.width = el.getAttribute('data-width') + '%';
+    });
 
-let offset = 440 - (440 * persen / 100);
+    let persen = Number("{{ data.persen | default(0) }}");
+    let circle = document.getElementById("circle");
+    let text = document.getElementById("text");
+    let status = document.getElementById("status");
 
-circle.style.strokeDashoffset = offset;
-text.innerHTML = persen + "%";
+    let offset = 440 - (440 * persen / 100);
+    circle.style.strokeDashoffset = offset;
+    text.innerHTML = persen + "%";
 
-// WARNA DINAMIS
-if (persen < 40) {
-    circle.style.stroke = "green";
-    status.innerHTML = "Risiko Rendah";
-} else if (persen < 70) {
-    circle.style.stroke = "orange";
-    status.innerHTML = "Risiko Sedang";
-} else {
-    circle.style.stroke = "red";
-    status.innerHTML = "Risiko Tinggi";
-}
+    if (persen < 40) {
+        circle.style.stroke = "#28a745";
+        status.innerHTML = "Risiko Rendah";
+        status.style.color = "#28a745";
+    } else if (persen < 70) {
+        circle.style.stroke = "#ffc107";
+        status.innerHTML = "Risiko Sedang";
+        status.style.color = "#ffc107";
+    } else {
+        circle.style.stroke = "#dc3545";
+        status.innerHTML = "Risiko Tinggi";
+        status.style.color = "#dc3545";
+    }
 </script>
 
 </body>
