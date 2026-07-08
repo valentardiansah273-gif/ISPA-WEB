@@ -30,7 +30,6 @@
             margin-bottom: 20px; 
             color: #666; 
         }
-        /* Lingkaran Progress */
         .circle { position: relative; width: 180px; height: 180px; margin: 20px auto; }
         .circle svg { transform: rotate(-90deg); }
         .circle circle { fill: none; stroke-width: 12; stroke-linecap: round; }
@@ -38,15 +37,10 @@
         .progress { stroke-dasharray: 440; stroke-dashoffset: 440; transition: stroke-dashoffset 1s ease; }
         .value { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 32px; font-weight: bold; color: #333; }
         
-        /* Status & Saran */
         .status { font-size: 22px; font-weight: bold; margin-top: 10px; }
         .info { font-size: 15px; color: #777; margin-bottom: 20px; }
-        .gejala-box { text-align: left; background: #fff3e0; padding: 15px; border-radius: 12px; margin-bottom: 20px; }
-        .gejala-box h3 { margin-top: 0; font-size: 16px; color: #e65100; }
-        .gejala-box ul { padding-left: 20px; margin: 5px 0 0 0; }
         .saran { text-align: left; padding: 15px; border-radius: 12px; background: #f1f8e9; font-size: 14px; color: #2e7d32; }
         
-        /* Tombol */
         .btn { display: block; width: 100%; padding: 12px; margin-top: 10px; border-radius: 10px; text-decoration: none; color: white; font-weight: bold; transition: opacity 0.3s; }
         .btn:hover { opacity: 0.9; }
         .btn-home { background: #007bff; }
@@ -73,15 +67,6 @@
 
     <div class="status" id="statusText"></div>
     <div class="info" id="infoText"></div>
-
-    <div class="gejala-box">
-        <h3>🔍 Gejala Paling Berpengaruh:</h3>
-        <ul>
-            {% for f in top3 %}
-                <li>{{ f }}</li>
-            {% endfor %}
-        </ul>
-    </div>
 
     <div id="saranBox" class="saran"></div>
 
