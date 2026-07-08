@@ -5,9 +5,7 @@
     <title>Prediksi Risiko ISPA</title>
 
     <style>
-        * {
-            box-sizing: border-box;
-        }
+        * { box-sizing: border-box; }
 
         body {
             font-family: 'Segoe UI', sans-serif;
@@ -26,179 +24,59 @@
             box-shadow: 0px 10px 30px rgba(0,0,0,0.2);
         }
 
-        h2 {
-            text-align: center;
-            color: #333;
-        }
+        h2 { text-align: center; color: #333; }
 
-        .input-group {
-            margin-bottom: 15px;
-        }
-
-        .input-group label {
-            font-weight: 600;
-            display: block;
-            margin-bottom: 5px;
-        }
-
+        .input-group { margin-bottom: 15px; }
+        .input-group label { font-weight: 600; display: block; margin-bottom: 5px; }
         .input-group input {
             width: 100%;
             padding: 12px;
             border-radius: 10px;
             border: 1px solid #ccc;
             outline: none;
-            transition: 0.3s;
         }
 
-        .input-group input:focus {
-            border-color: #4facfe;
-            box-shadow: 0 0 5px rgba(79,172,254,0.5);
-        }
-
-        /* PROGRESS */
+        /* PROGRESS BAR */
         .progress-wrapper {
-            position: sticky;
-            top: 0;
-            background: white;
-            padding: 15px 0;
-            z-index: 100;
-            border-bottom: 1px solid #eee;
-            margin-bottom: 20px;
+            position: sticky; top: 0; background: white; padding: 15px 0; z-index: 100;
+            border-bottom: 1px solid #eee; margin-bottom: 20px;
         }
-
-        .progress-container {
-            width: 100%;
-            height: 12px;
-            background: #ddd;
-            border-radius: 10px;
-        }
-
+        .progress-container { width: 100%; height: 12px; background: #ddd; border-radius: 10px; }
         #progress-bar {
-            height: 100%;
-            width: 0%;
-            background: linear-gradient(90deg, #4facfe, #00c6ff);
-            border-radius: 10px;
-            transition: 0.3s;
+            height: 100%; width: 0%; background: linear-gradient(90deg, #4facfe, #00c6ff);
+            border-radius: 10px; transition: 0.3s;
         }
+        #progress-text { text-align: center; font-size: 14px; margin-top: 5px; font-weight: bold; }
 
-        #progress-text {
-            text-align: center;
-            font-size: 14px;
-            margin-top: 5px;
-            font-weight: bold;
-        }
-
-        .question {
-            margin-bottom: 18px;
-            padding: 18px;
-            border-radius: 12px;
-            background: #f9f9f9;
-            transition: 0.3s;
-        }
-
-        .question:hover {
-            transform: scale(1.01);
-        }
-
-        .question p {
-            margin-bottom: 12px;
-            font-weight: 600;
-            line-height: 1.5;
-        }
-
-        /* TAMPILAN SKALA 1-5 */
-        .options {
-            display: flex;
-            gap: 8px;
-        }
-
-        .options label {
-            flex: 1;
-            cursor: pointer;
-        }
-
+        .question { margin-bottom: 18px; padding: 18px; border-radius: 12px; background: #f9f9f9; }
+        
+        /* SKALA 1-5 */
+        .options { display: flex; gap: 8px; }
+        .options label { flex: 1; cursor: pointer; }
         .options span {
-            display: block;
-            text-align: center;
-            padding: 12px 5px;
-            border-radius: 10px;
-            background: #e0e0e0;
-            font-size: 13px;
-            font-weight: 500;
-            transition: 0.2s;
-            border: 1px solid #ccc;
+            display: block; text-align: center; padding: 12px 5px; border-radius: 10px;
+            background: #e0e0e0; font-size: 13px; font-weight: 500;
         }
+        .options input { display: none; }
+        
+        .options input[value="1"]:checked + span { background: #28a745; color: white; }
+        .options input[value="2"]:checked + span { background: #8bc34a; color: white; }
+        .options input[value="3"]:checked + span { background: #ff9800; color: white; }
+        .options input[value="4"]:checked + span { background: #e65100; color: white; }
+        .options input[value="5"]:checked + span { background: #dc3545; color: white; }
 
-        .options span:hover {
-            background: #d0d0d0;
-        }
-
-        .options input {
-            display: none;
-        }
-
-        /* Pewarnaan Gradasi Berdasarkan Tingkat Keparahan */
-        /* Skala 1: Tidak Ada (Hijau) */
-        .options input[value="1"]:checked + span {
-            background: #28a745;
-            color: white;
-            border-color: #28a745;
-        }
-
-        /* Skala 2: Ringan (Hijau Muda/Kuning) */
-        .options input[value="2"]:checked + span {
-            background: #8bc34a;
-            color: white;
-            border-color: #8bc34a;
-        }
-
-        /* Skala 3: Sedang (Jingga/Orange) */
-        .options input[value="3"]:checked + span {
-            background: #ff9800;
-            color: white;
-            border-color: #ff9800;
-        }
-
-        /* Skala 4: Parah (Merah Jingga) */
-        .options input[value="4"]:checked + span {
-            background: #e65100;
-            color: white;
-            border-color: #e65100;
-        }
-
-        /* Skala 5: Sangat Berat (Merah Tua) */
-        .options input[value="5"]:checked + span {
-            background: #dc3545;
-            color: white;
-            border-color: #dc3545;
-        }
-
+        /* BUTTONS */
         button {
-            width: 100%;
-            padding: 15px;
-            margin-top: 20px;
-            background: linear-gradient(135deg, #4facfe, #00c6ff);
-            border: none;
-            color: white;
-            font-size: 18px;
-            border-radius: 12px;
-            cursor: pointer;
-            font-weight: bold;
-            box-shadow: 0 4px 15px rgba(79,172,254,0.4);
+            width: 100%; padding: 15px; margin-top: 20px;
+            background: #007bff; border: none; color: white; 
+            font-size: 18px; border-radius: 12px; cursor: pointer; font-weight: bold;
         }
+        button:disabled { background: #ccc; cursor: not-allowed; }
 
-        button:hover {
-            background: linear-gradient(135deg, #00c6ff, #4facfe);
-        }
-
-        @media(max-width: 600px) {
-            .options {
-                flex-direction: column;
-                gap: 5px;
-            }
-            .options span {
-                padding: 10px;
-            }
+        .btn-back {
+            display: block; width: 100%; padding: 15px; margin-top: 10px;
+            background: #6c757d; color: white; text-align: center;
+            text-decoration: none; border-radius: 12px; font-weight: bold;
         }
     </style>
 </head>
@@ -209,7 +87,7 @@
     <h2>🩺 Form Prediksi Risiko ISPA</h2>
 
     <form method="POST" action="/predict" onsubmit="this.querySelector('button').disabled=true; this.querySelector('button').innerText='Memproses...';">
-
+        
         <div class="input-group">
             <label>👤 Nama Pasien</label>
             <input type="text" name="nama" required placeholder="Masukkan nama Anda">
@@ -221,95 +99,48 @@
         </div>
 
         <div class="progress-wrapper">
-            <div class="progress-container">
-                <div id="progress-bar"></div>
-            </div>
+            <div class="progress-container"><div id="progress-bar"></div></div>
             <p id="progress-text">0 / 16 terisi</p>
         </div>
 
         {% set pertanyaan = [
-        "Batuk Kering (Batuk tanpa disertai lendir atau dahak)",
-        "Batuk Berdahak (Batuk produktif yang disertai dengan adanya lendir)",
-        "Peningkatan Suhu Tubuh / Demam (Merasa meriang, panas, atau menggigil)",
-        "Pilek / Rinore (Kondisi hidung memproduksi cairan encer secara terus-menerus)",
-        "Hidung Tersumbat (Kesulitan bernapas akibat kongesti atau penyumbatan hidung)",
-        "Dispnea / Sesak Napas (Merasa berat, megap-megap, atau kekurangan oksigen)",
-        "Faringitis / Nyeri Tenggorokan (Rasa gatal, perih, atau kering di tenggorokan)",
-        "Sakit Headache / Sefalgia (Rasa nyeri atau pusing berputar di area kepala)",
-        "Mual atau Muntah (Gangguan pencernaan atau rasa tidak nyaman pada lambung)",
-        "Nyeri Dada / Pleuritic Pain (Rasa tertekan atau nyeri tidur/tajam di dada saat bernapas)",
-        "Disfonia / Suara Serak (Perubahan kualitas suara menjadi parau atau mengecil)",
-        "Fatigue / Kelelahan Akut (Rasa lemas atau kehilangan energi yang amat sangat)",
-        "Hiperhidrosis Nokturnal (Berkeringat secara berlebihan di malam hari saat tidur)",
-        "Penurunan Nafsu Makan (Kehilangan selera makan secara drastis dalam beberapa hari terakhir)",
-        "Anosmia / Hilang Penciuman (Penurunan atau hilangnya kemampuan mendeteksi bau)",
-        "Odinofagia / Nyeri Saat Menelan (Rasa sakit di tenggorokan ketika menelan makanan atau air)"
+            "Batuk kering", "Batuk berdahak", "Demam", "Pilek", "Hidung tersumbat", 
+            "Sesak napas", "Nyeri tenggorokan", "Sakit kepala", "Mual / muntah", 
+            "Nyeri dada", "Suara serak", "Kelelahan", "Keringat malam", 
+            "Nafsu makan turun", "Hilang penciuman", "Nyeri saat menelan"
         ] %}
 
         {% for i in range(pertanyaan|length) %}
         <div class="question">
             <p>{{ i+1 }}. {{ pertanyaan[i] }}</p>
-
             <div class="options">
+                {% for val in range(1, 6) %}
                 <label>
-                    <input type="radio" name="q{{i}}" value="1" required>
-                    <span>1<br>Tidak Ada</span>
+                    <input type="radio" name="q{{i}}" value="{{ val }}" required>
+                    <span>{{ val }}</span>
                 </label>
-
-                <label>
-                    <input type="radio" name="q{{i}}" value="2" required>
-                    <span>2<br>Ringan</span>
-                </label>
-
-                <label>
-                    <input type="radio" name="q{{i}}" value="3" required>
-                    <span>3<br>Sedang</span>
-                </label>
-
-                <label>
-                    <input type="radio" name="q{{i}}" value="4" required>
-                    <span>4<br>Parah</span>
-                </label>
-
-                <label>
-                    <input type="radio" name="q{{i}}" value="5" required>
-                    <span>5<br>Sangat Berat</span>
-                </label>
+                {% endfor %}
             </div>
         </div>
         {% endfor %}
 
         <button type="submit">🔍 Prediksi Sekarang</button>
-
+        <a href="/" class="btn-back">⬅ Kembali ke Home</a>
     </form>
 </div>
 
 <script>
-const total = 16;
-
-function updateProgress() {
-    let answered = 0;
-
-    for (let i = 0; i < total; i++) {
-        let radios = document.getElementsByName("q" + i);
-        for (let r of radios) {
-            if (r.checked) {
-                answered++;
-                break;
-            }
+    const total = 16;
+    function updateProgress() {
+        let answered = 0;
+        for (let i = 0; i < total; i++) {
+            if (document.querySelector('input[name="q' + i + '"]:checked')) answered++;
         }
+        let percent = (answered / total) * 100;
+        document.getElementById("progress-bar").style.width = percent + "%";
+        document.getElementById("progress-text").innerText = answered + " / " + total + " terisi";
     }
-
-    let percent = (answered / total) * 100;
-
-    document.getElementById("progress-bar").style.width = percent + "%";
-    document.getElementById("progress-text").innerText =
-        answered + " / " + total + " terisi";
-}
-
-document.querySelectorAll('input[type="radio"]').forEach((radio) => {
-    radio.addEventListener("change", updateProgress);
-});
+    document.querySelectorAll('input[type="radio"]').forEach(r => r.addEventListener("change", updateProgress));
 </script>
 
 </body>
