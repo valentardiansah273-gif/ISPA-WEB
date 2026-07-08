@@ -216,7 +216,7 @@ def predict():
         cursor.close()
     finally:
         conn.close()
-
+    debug_input = [float(request.form.get(f'q{i}', 1)) for i in range(16)]
     return render_template('result.html', hasil=hasil, persen=persen, nama=nama, umur=umur, debug_input=debug_input)
 
 
