@@ -29,9 +29,7 @@
             to {opacity:1; transform:translateY(0);}
         }
 
-        h2 {
-            margin-bottom: 10px;
-        }
+        h2 { text-align: center; }
 
         .logo {
             width: 60px;
@@ -46,18 +44,14 @@
             margin: 20px auto;
         }
 
-        svg {
-            transform: rotate(-90deg);
-        }
+        svg { transform: rotate(-90deg); }
 
         circle {
             fill: none;
             stroke-width: 12;
         }
 
-        .bg {
-            stroke: #eee;
-        }
+        .bg { stroke: #eee; }
 
         .progress {
             stroke-dasharray: 440;
@@ -83,19 +77,15 @@
         }
 
         .pasien {
-            background: linear-gradient(135deg, #f5f5f5, #eaeaea);
+            background: #f5f5f5;
             padding: 15px;
             border-radius: 12px;
             margin-bottom: 20px;
         }
 
-        .gejala {
-            margin-top: 20px;
-        }
+        .gejala { margin-top: 20px; }
 
-        .item {
-            margin-bottom: 18px;
-        }
+        .item { margin-bottom: 18px; }
 
         .label {
             font-size: 14px;
@@ -123,6 +113,14 @@
             font-weight: 500;
         }
 
+        /* ✅ WARNA BERDASARKAN NILAI */
+        .warna-1 { color: #28a745; }
+        .warna-2 { color: #8bc34a; }
+        .warna-3 { color: #ffc107; }
+        .warna-4 { color: #e65100; }
+        .warna-5 { color: #dc3545; }
+        .warna-0 { color: #666; }
+
         .btn {
             display: block;
             margin-top: 15px;
@@ -135,30 +133,22 @@
             transition: 0.3s;
         }
 
+        .download { background: #28a745; }
+        .back { background: #333; }
+
         .btn:hover {
             transform: translateY(-2px);
             opacity: 0.9;
-        }
-
-        .download {
-            background: linear-gradient(135deg, #28a745, #34d058);
-        }
-
-        .back {
-            background: linear-gradient(135deg, #333, #555);
         }
     </style>
 </head>
 
 <body>
-
 <div class="container">
 
     <img src="https://cdn-icons-png.flaticon.com/512/2966/2966480.png" class="logo">
+    <h2>Detail Hasil</h2>
 
-    <h2 align="center">Detail Hasil</h2>
-
-    <!-- CIRCLE -->
     <div class="circle">
         <svg width="160" height="160">
             <circle cx="80" cy="80" r="70" class="bg"></circle>
@@ -169,78 +159,53 @@
 
     <div class="status" id="status"></div>
 
-    <!-- DATA PASIEN -->
     <div class="pasien">
         <b>Nama:</b> {{ data.nama }} <br>
         <b>Umur:</b> {{ data.umur }} tahun
     </div>
 
-    <!-- PERTANYAAN -->
     {% set pertanyaan = {
-        'q0': 'Batuk kering',
-        'q1': 'Batuk berdahak',
-        'q2': 'Demam',
-        'q3': 'Pilek',
-        'q4': 'Hidung tersumbat',
-        'q5': 'Sesak napas',
-        'q6': 'Nyeri tenggorokan',
-        'q7': 'Sakit kepala',
-        'q8': 'Mual / muntah',
-        'q9': 'Nyeri dada',
-        'q10': 'Suara serak',
-        'q11': 'Kelelahan',
-        'q12': 'Keringat malam',
-        'q13': 'Nafsu makan turun',
-        'q14': 'Hilang penciuman',
-        'q15': 'Nyeri saat menelan'
+        'q0':'Batuk kering','q1':'Batuk berdahak','q2':'Demam','q3':'Pilek',
+        'q4':'Hidung tersumbat','q5':'Sesak napas','q6':'Nyeri tenggorokan',
+        'q7':'Sakit kepala','q8':'Mual / muntah','q9':'Nyeri dada',
+        'q10':'Suara serak','q11':'Kelelahan','q12':'Keringat malam',
+        'q13':'Nafsu makan turun','q14':'Hilang penciuman','q15':'Nyeri saat menelan'
     } %}
 
-    <!-- GEJALA -->
     <div class="gejala">
         <h3>Tingkat Keparahan Gejala (1–5)</h3>
-
-        <p style="font-size:12px; text-align:center; color:#666;">
-            1 = Tidak Ada | 2 = Sangat Ringan | 3 = Sedang | 4 = Parah | 5 = Sangat Parah
-        </p>
 
         {% for i in range(16) %}
         {% set key = 'q' ~ i %}
         {% set val = jawaban[key] | default(0) | int %}
-        {% set persen = val * 20 %}
+
+        {% if val == 1 %}
+            {% set teks = 'Tidak Ada' %}
+        {% elif val == 2 %}
+            {% set teks = 'Sangat Ringan' %}
+        {% elif val == 3 %}
+            {% set teks = 'Sedang' %}
+        {% elif val == 4 %}
+            {% set teks = 'Parah' %}
+        {% elif val == 5 %}
+            {% set teks = 'Sangat Parah' %}
+        {% else %}
+            {% set teks = 'Tidak Diisi' %}
+        {% endif %}
 
         <div class="item">
             <div class="label">{{ pertanyaan[key] }}</div>
 
             <div class="bar-bg">
-                <div class="bar-fill" data-width="{{ persen }}"></div>
+                <div class="bar-fill" data-width="{{ val * 20 }}"></div>
             </div>
 
             <div class="nilai">
                 Tingkat: <b>{{ val }}/5</b> -
-                <span
-                {% if val == 1 %} style="color:#28a745"
-                {% elif val == 2 %} style="color:#5cb85c"
-                {% elif val == 3 %} style="color:#ffc107"
-                {% elif val == 4 %} style="color:#ff8c00"
-                {% elif val == 5 %} style="color:#dc3545"
-                {% endif %}
-                >
-                {% if val == 1 %}
-                    Tidak Ada
-                {% elif val == 2 %}
-                    Sangat Ringan
-                {% elif val == 3 %}
-                    Sedang
-                {% elif val == 4 %}
-                    Parah
-                {% elif val == 5 %}
-                    Sangat Parah
-                {% else %}
-                    Tidak Diisi
-                {% endif %}
-                </span>
+                <b class="warna-{{ val }}">{{ teks }}</b>
             </div>
         </div>
+
         {% endfor %}
     </div>
 
@@ -250,44 +215,41 @@
 </div>
 
 <script>
-    document.querySelectorAll('.bar-fill').forEach(el => {
-        let w = parseInt(el.getAttribute('data-width')) || 0;
-        setTimeout(() => {
-            el.style.width = w + '%';
-        }, 200);
+document.querySelectorAll('.bar-fill').forEach(el => {
+    let w = parseInt(el.dataset.width) || 0;
+    setTimeout(() => el.style.width = w + '%', 200);
 
-        if (w < 40) el.style.background = "linear-gradient(90deg,#28a745,#5cd65c)";
-        else if (w < 70) el.style.background = "linear-gradient(90deg,#ffc107,#ffdb4d)";
-        else el.style.background = "linear-gradient(90deg,#dc3545,#ff6b6b)";
-    });
+    if (w < 40) el.style.background = "#28a745";
+    else if (w < 70) el.style.background = "#ffc107";
+    else el.style.background = "#dc3545";
+});
 
-    let persen = Number("{{ data.persen | default(0) }}") || 0;
-    let circle = document.getElementById("circle");
-    let text = document.getElementById("text");
-    let status = document.getElementById("status");
+let persen = Number("{{ data.persen | default(0) }}") || 0;
+let circle = document.getElementById("circle");
+let text = document.getElementById("text");
+let status = document.getElementById("status");
 
-    circle.style.strokeDasharray = "440";
+circle.style.strokeDasharray = "440";
+let offset = 440 - (440 * persen / 100);
 
-    let offset = 440 - (440 * persen / 100);
+setTimeout(() => {
+    circle.style.strokeDashoffset = offset;
+    text.innerHTML = persen + "%";
+}, 300);
 
-    setTimeout(() => {
-        circle.style.strokeDashoffset = offset;
-        text.innerHTML = persen + "%";
-    }, 300);
-
-    if (persen < 40) {
-        circle.style.stroke = "#28a745";
-        status.innerHTML = "Risiko Rendah";
-        status.style.color = "#28a745";
-    } else if (persen < 70) {
-        circle.style.stroke = "#ffc107";
-        status.innerHTML = "Risiko Sedang";
-        status.style.color = "#ffc107";
-    } else {
-        circle.style.stroke = "#dc3545";
-        status.innerHTML = "Risiko Tinggi";
-        status.style.color = "#dc3545";
-    }
+if (persen < 40) {
+    circle.style.stroke = "#28a745";
+    status.innerHTML = "Risiko Rendah";
+    status.style.color = "#28a745";
+} else if (persen < 70) {
+    circle.style.stroke = "#ffc107";
+    status.innerHTML = "Risiko Sedang";
+    status.style.color = "#ffc107";
+} else {
+    circle.style.stroke = "#dc3545";
+    status.innerHTML = "Risiko Tinggi";
+    status.style.color = "#dc3545";
+}
 </script>
 
 </body>

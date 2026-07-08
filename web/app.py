@@ -157,7 +157,7 @@ def predict():
         if 'username' not in session:
             return redirect('/login')
 
-        # ================= INPUT =================
+ # ================= INPUT =================
         nama = request.form.get("nama", "").strip()
         umur_raw = request.form.get("umur", 0)
 
@@ -173,14 +173,17 @@ def predict():
             nilai = request.form.get(f"q{i}")
 
             try:
-                val = float(nilai) if nilai else 1.0
+                # Simpan nilai asli (1-5) ke variabel sementara
+                val_asli = float(nilai) if nilai else 1.0
             except:
-                val = 1.0
+                val_asli = 1.0
 
-            val = 1 if val >= 3 else 0
+            # Simpan ke dict untuk keperluan database/tampilan detail
+            jawaban_dict[f"q{i}"] = int(val_asli)
 
-            gejala.append(val)
-            jawaban_dict[f"q{i}"] = int(val)
+            # Konversi ke biner hanya untuk input model
+            val_biner = 1 if val_asli >= 3 else 0
+            gejala.append(val_biner)
 
         # ================= DATAFRAME =================
         input_data = [umur] + gejala
