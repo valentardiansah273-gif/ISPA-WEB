@@ -165,7 +165,7 @@ def predict():
             nilai = request.form.get(f"q{i}")
             val = float(nilai) if nilai else 1.0
 
-            gejala.append(val)   # ⬅️ LANGSUNG pakai 1–5
+            gejala.append(val)
             jawaban_dict[f"q{i}"] = val
 
         # ================= DATAFRAME =================
@@ -179,12 +179,24 @@ def predict():
         hasil = model.predict(input_scaled)[0]
         probabilitas = model.predict_proba(input_scaled)[0]
 
-        # 🔥 FIX PROBABILITAS (ANTI 0%)
+        # 🔥 FIX AMAN AMBIL INDEX ISPA
         kelas = model.classes_
-        idx_ispa = list(kelas).index(1)
+        if 1 in kelas:
+            idx_ispa = list(kelas).index(1)
+        else:
+            idx_ispa = 0  # fallback biar gak crash
+
         persen = round(float(probabilitas[idx_ispa]) * 100, 2)
 
         diagnosis = "ISPA" if hasil == 1 else "Tidak ISPA"
+
+        # ================= 🔥 TAMBAHAN TOP 3 GEJALA =================
+        # ambil 3 gejala dengan nilai tertinggi
+        top3 = sorted(
+            [(f"q{i}", gejala[i]) for i in range(len(gejala))],
+            key=lambda x: x[1],
+            reverse=True
+        )[:3]
 
         # ================= DEBUG =================
         print("=== DEBUG WEB ===")
@@ -216,13 +228,12 @@ def predict():
 
         # ================= RETURN =================
         return render_template(
-        "result.html",
-        persen = round(float(probabilitas[idx_ispa]) * 100, 2),
-        persen=persen,
-        nama=nama,
-        umur=umur,
-        top3=top3,
-        debug_input=input_df.to_dict(),
+            "result.html",
+            persen=persen,  # 🔥 pakai yang sudah dihitung
+            nama=nama,
+            umur=umur,
+            top3=top3,
+            debug_input=input_df.to_dict(),
         )
 
     except Exception as e:
