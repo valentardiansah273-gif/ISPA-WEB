@@ -21,6 +21,12 @@ print(df.head())
 # PISAHKAN LABEL
 # ==============================
 y = df["Label_ISPA"]
+# ==============================
+# FIX LABEL KEBALIK
+# ==============================
+y = y.map({0:1, 1:0})
+print("\nLabel setelah dibalik:")
+print(y.value_counts())
 X = df.drop(columns=["Label_ISPA"])
 
 # ==============================
@@ -110,3 +116,7 @@ joblib.dump(X.columns.tolist(), "model_saved/fitur_urutan.pkl")
 joblib.dump(fitur_importance, "model_saved/importance.pkl")
 
 print("\n✅ Semua file berhasil disimpan ke folder model_saved!")
+
+print("\nContoh prediksi:")
+print(model.predict(X_train_scaled[:5]))
+print(model.predict_proba(X_train_scaled[:5]))

@@ -165,6 +165,9 @@ def predict():
             nilai = request.form.get(f"q{i}")
             val = float(nilai) if nilai else 1.0
 
+            # 🔥 KONVERSI 1–5 → 0–1 (HALUS)
+            val = (val - 1) / 4
+
             gejala.append(val)
             jawaban_dict[f"q{i}"] = val
 
