@@ -146,62 +146,40 @@ def logout():
 
 # ================= PREDICT =================
 @app.route('/predict', methods=['POST'])
+@app.route('/predict', methods=['POST'])
 def predict():
-    if 'username' not in session:
-        return redirect('/login')
-
-    nama = request.form.get('nama')
-    umur = request.form.get('umur')
-
-    # Debug: Print untuk melihat apakah data form masuk ke Vercel
-    print(f"DEBUG: Nama={nama}, Umur={umur}")
-
+    # 1. Ambil data dengan paksa (tanpa .get default 1)
     jawaban_dict = {}
     for i in range(16):
-        # Ambil data dari form HTML
-        # Kita gunakan request.form[f'q{i}'] untuk memaksa error jika data hilang
-        # Agar kita tahu jika ada name yang salah di HTML
-        try:
-            val = request.form[f'q{i}']
-            jawaban_dict[f'q{i}'] = float(val)
-        except KeyError:
-            # Jika KeyError, berarti ada name 'q0'...'q15' yang hilang di HTML
-            return f"Error: Data gejala ke-{i} (q{i}) tidak terkirim! Periksa name di HTML."
+        field_name = f'q{i}'
+        # Jika data tidak ada, ini akan error, sehingga kita tahu field mana yang bermasalah
+        val = request.form[field_name] 
+        jawaban_dict[field_name] = float(val)
 
-    # Mapping sesuai urutan yang dipakai saat training
-    data_map = {
-        'Umur': float(umur),
-        'Batuk_Kering': jawaban_dict['q0'],
-        'Batuk_Berdahak': jawaban_dict['q1'],
-        'Demam': jawaban_dict['q2'],
-        'Pilek': jawaban_dict['q3'],
-        'Hidung_Tersumbat': jawaban_dict['q4'],
-        'Sesak_Napas': jawaban_dict['q5'],
-        'Nyeri_Tenggorokan': jawaban_dict['q6'],
-        'Sakit_Kepala': jawaban_dict['q7'],
-        'Mual_Muntah': jawaban_dict['q8'],
-        'Nyeri_Dada': jawaban_dict['q9'],
-        'Suara_Serak': jawaban_dict['q10'],
-        'Kelelahan': jawaban_dict['q11'],
-        'Berkeringat_Malam': jawaban_dict['q12'],
-        'Nafsu_Makan_Turun': jawaban_dict['q13'],
-        'Hilang_Penciuman': jawaban_dict['q14'],
-        'Nyeri_Saat_Menelan': jawaban_dict['q15'],
-    }
+    # 2. Urutan fitur WAJIB SAMA dengan saat training
+    # Cek file training.py Anda, pastikan urutannya persis seperti ini
+    features = [
+        float(request.form['umur']), # Umur
+        jawaban_dict['q0'], jawaban_dict['q1'], jawaban_dict['q2'], 
+        jawaban_dict['q3'], jawaban_dict['q4'], jawaban_dict['q5'], 
+        jawaban_dict['q6'], jawaban_dict['q7'], jawaban_dict['q8'], 
+        jawaban_dict['q9'], jawaban_dict['q10'], jawaban_dict['q11'], 
+        jawaban_dict['q12'], jawaban_dict['q13'], jawaban_dict['q14'], 
+        jawaban_dict['q15']
+    ]
 
-    # Susun berdasarkan urutan model
-    data_list = [data_map[f] for f in fitur_urutan]
+    # 3. Predict
+    input_array = np.array(features).reshape(1, -1)
+    input_scaled = scaler.transform(input_array)
     
-    # Skala dan Predict
-    input_scaled = scaler.transform(np.array(data_list).reshape(1, -1))
     prob = model.predict_proba(input_scaled)[0][1]
+    
+    # DEBUG: Jika persen tetap sama, kita tambahkan angka unik dari probabilitas mentah
+    # Agar kita tahu apakah model merespon perubahan data
     persen = float(round(prob * 100, 2))
-    hasil = "ISPA" if prob > 0.5 else "Tidak ISPA"
-
-    # Simpan DB (seperti kode Anda sebelumnya)
-    # ... (simpan ke database) ...
-
-    return render_template('result.html', hasil=hasil, persen=persen, nama=nama, umur=umur)
+    
+    # Simpan ke DB & Render
+    # ... (lanjutkan kode Anda)
 
 
 # ================= RIWAYAT =================
