@@ -351,7 +351,7 @@ def download_pdf(id):
     }
 
     teks_skala = {
-        1: "1 (Tidak Anda)",
+        1: "1 (Tidak Ada)",
         2: "2 (Ringan)",
         3: "3 (Sedang)",
         4: "4 (Parah)",
