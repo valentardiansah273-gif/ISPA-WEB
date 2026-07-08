@@ -156,50 +156,54 @@ def predict():
     if not nama or not umur:
         return "Nama atau umur tidak boleh kosong!"
 
-    # 1. Kumpulkan data ke dictionary
+    # 1. Ambil input gejala
     jawaban_dict = {}
     for i in range(16):
-        val = int(request.form.get(f'q{i}', 1))
-        jawaban_dict[f'q{i}'] = val
+        # Ambil nilai, default ke 1 jika tidak ada
+        val = request.form.get(f'q{i}', '1')
+        jawaban_dict[f'q{i}'] = float(val)
 
-    # 2. Sesuaikan keys dengan nama fitur yang ada di fitur_urutan.pkl
-    # Pastikan urutan ini sama dengan saat training!
+    # 2. Mapping ke nama fitur (PASTIKAN KEY SAMA DENGAN fitur_urutan.pkl)
     data_map = {
         'Umur': float(umur),
-        'Batuk_Kering': float(jawaban_dict['q0']),
-        'Batuk_Berdahak': float(jawaban_dict['q1']),
-        'Demam': float(jawaban_dict['q2']),
-        'Pilek': float(jawaban_dict['q3']),
-        'Hidung_Tersumbat': float(jawaban_dict['q4']),
-        'Sesak_Napas': float(jawaban_dict['q5']),
-        'Nyeri_Tenggorokan': float(jawaban_dict['q6']),
-        'Sakit_Kepala': float(jawaban_dict['q7']),
-        'Mual_Muntah': float(jawaban_dict['q8']),
-        'Nyeri_Dada': float(jawaban_dict['q9']),
-        'Suara_Serak': float(jawaban_dict['q10']),
-        'Kelelahan': float(jawaban_dict['q11']),
-        'Berkeringat_Malam': float(jawaban_dict['q12']),
-        'Nafsu_Makan_Turun': float(jawaban_dict['q13']),
-        'Hilang_Penciuman': float(jawaban_dict['q14']),
-        'Nyeri_Saat_Menelan': float(jawaban_dict['q15']),
+        'Batuk_Kering': jawaban_dict['q0'],
+        'Batuk_Berdahak': jawaban_dict['q1'],
+        'Demam': jawaban_dict['q2'],
+        'Pilek': jawaban_dict['q3'],
+        'Hidung_Tersumbat': jawaban_dict['q4'],
+        'Sesak_Napas': jawaban_dict['q5'],
+        'Nyeri_Tenggorokan': jawaban_dict['q6'],
+        'Sakit_Kepala': jawaban_dict['q7'],
+        'Mual_Muntah': jawaban_dict['q8'],
+        'Nyeri_Dada': jawaban_dict['q9'],
+        'Suara_Serak': jawaban_dict['q10'],
+        'Kelelahan': jawaban_dict['q11'],
+        'Berkeringat_Malam': jawaban_dict['q12'],
+        'Nafsu_Makan_Turun': jawaban_dict['q13'],
+        'Hilang_Penciuman': jawaban_dict['q14'],
+        'Nyeri_Saat_Menelan': jawaban_dict['q15'],
     }
 
-    # 3. Susun data sesuai urutan yang dipakai model (fitur_urutan)
-    data_list = [data_map[f] for f in fitur_urutan]
-    
-    # 4. Ubah ke array 2D untuk scaler
+    # 3. Susun data berdasarkan urutan fitur hasil training
+    # PENTING: Jika di sini error, berarti nama fitur di data_map tidak sama dengan di fitur_urutan.pkl
+    try:
+        data_list = [data_map[f] for f in fitur_urutan]
+    except KeyError as e:
+        return f"Error: Fitur {e} tidak ditemukan di mapping! Cek kesesuaian nama fitur."
+
+    # Debug log (Lihat di console Vercel)
+    print(f"DEBUG INPUT: {data_list}")
+
+    # 4. Normalisasi
     input_array = np.array(data_list).reshape(1, -1)
-    
-    # 5. NORMALISASI menggunakan scaler yang sudah di-load di atas
-    # Hapus fungsi norm_skala manual, gunakan scaler.transform ini:
     input_scaled = scaler.transform(input_array)
 
-    # 6. Prediksi menggunakan data yang sudah di-scale
+    # 5. Prediksi
     prob = model.predict_proba(input_scaled)[0][1]
     persen = float(round(prob * 100, 2))
     hasil = "ISPA" if prob > 0.5 else "Tidak ISPA"
 
-    # 7. Simpan ke database
+    # 6. Simpan DB
     jawaban_json = json.dumps(jawaban_dict)
     conn = get_db_connection()
     try:
