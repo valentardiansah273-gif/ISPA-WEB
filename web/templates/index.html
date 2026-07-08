@@ -208,7 +208,7 @@
 <div class="container">
     <h2>🩺 Form Prediksi Risiko ISPA</h2>
 
-    <form method="POST" action="/predict">
+    <form method="POST" action="/predict" onsubmit="this.querySelector('button').disabled=true; this.querySelector('button').innerText='Memproses...';">
 
         <div class="input-group">
             <label>👤 Nama Pasien</label>
