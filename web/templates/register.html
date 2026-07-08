@@ -23,11 +23,21 @@ body {
     border-radius: 15px;
     width: 100%;
     max-width: 400px;
+    animation: fadeIn 0.7s ease;
 }
 
-/* INPUT ICON */
+/* ANIMATION */
+@keyframes fadeIn {
+    from {opacity:0; transform: translateY(30px);}
+    to {opacity:1; transform: translateY(0);}
+}
+
 .input-group-text {
     cursor: pointer;
+}
+
+.progress {
+    background: rgba(255,255,255,0.2);
 }
 </style>
 </head>
@@ -44,27 +54,39 @@ body {
 
 <form method="post">
 
+<!-- USERNAME -->
 <input type="text" name="username" class="form-control mb-3" placeholder="Username" required>
 
-<div class="input-group mb-3">
-<input type="password" name="password" id="password" class="form-control" placeholder="Password" required>
+<!-- PASSWORD -->
+<div class="input-group mb-2">
+<input type="password" name="password" id="password" class="form-control" placeholder="Password" required onkeyup="checkStrength()">
 <span class="input-group-text" onclick="togglePassword('password')">
 <i class="bi bi-eye"></i>
 </span>
 </div>
 
-<div class="input-group mb-3">
+<!-- 🔥 STRENGTH BAR -->
+<div class="progress mb-2" style="height: 6px;">
+<div id="strength-bar" class="progress-bar" style="width: 0%"></div>
+</div>
+
+<small id="strength-text" class="text-light"></small>
+
+<!-- CONFIRM PASSWORD -->
+<div class="input-group mt-3 mb-3">
 <input type="password" name="confirm_password" id="confirm_password" class="form-control" placeholder="Konfirmasi Password" required>
 <span class="input-group-text" onclick="togglePassword('confirm_password')">
 <i class="bi bi-eye"></i>
 </span>
 </div>
 
+<!-- INFO -->
 <small class="text-light">
-Minimal 6 karakter, huruf besar, kecil, dan angka
+Gunakan minimal 8 karakter dengan kombinasi huruf besar, huruf kecil, dan angka untuk keamanan yang lebih baik.
 </small>
 
-<button class="btn btn-success w-100 mt-3">Register</button>
+<button class="btn btn-success w-100 mt-3" id="register-btn">Register</button>
+
 </form>
 
 <p class="mt-3 text-center">
@@ -77,6 +99,45 @@ Sudah punya akun? <a href="/login" class="text-warning">Login</a>
 function togglePassword(id) {
     let pass = document.getElementById(id);
     pass.type = pass.type === "password" ? "text" : "password";
+}
+
+function checkStrength() {
+    let password = document.getElementById("password").value;
+    let bar = document.getElementById("strength-bar");
+    let text = document.getElementById("strength-text");
+    let btn = document.getElementById("register-btn");
+
+    let strength = 0;
+
+    if (password.length >= 8) strength++;
+    if (/[A-Z]/.test(password)) strength++;
+    if (/[a-z]/.test(password)) strength++;
+    if (/[0-9]/.test(password)) strength++;
+    if (/[^A-Za-z0-9]/.test(password)) strength++;
+
+    if (password.length === 0) {
+        bar.style.width = "0%";
+        text.innerHTML = "";
+        btn.disabled = true;
+        return;
+    }
+
+    if (strength <= 2) {
+        bar.style.width = "33%";
+        bar.className = "progress-bar bg-danger";
+        text.innerHTML = "Password lemah";
+        btn.disabled = true;
+    } else if (strength <= 4) {
+        bar.style.width = "66%";
+        bar.className = "progress-bar bg-warning";
+        text.innerHTML = "Password sedang";
+        btn.disabled = false;
+    } else {
+        bar.style.width = "100%";
+        bar.className = "progress-bar bg-success";
+        text.innerHTML = "Password kuat";
+        btn.disabled = false;
+    }
 }
 </script>
 

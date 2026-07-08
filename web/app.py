@@ -44,7 +44,7 @@ def form():
 
 # ================= VALIDATION FUNCTION =================
 def validasi_password(password):
-    if len(password) < 6:
+    if len(password) < 8:
         return "Password minimal 6 karakter!"
     if not re.search(r"[A-Z]", password):
         return "Harus ada huruf besar!"
