@@ -137,7 +137,8 @@ body {
 <script>
 
 /* ✅ FIX: pastikan persen selalu angka */
-let persen = Number({{ persen | default(0) }});
+/* CARA BENAR: Gunakan tanda kutip agar dibaca sebagai string/angka */
+let persen = Number("{{ persen | default(0) }}");
 
 let circle = document.getElementById("progressCircle");
 let text = document.getElementById("percentText");
