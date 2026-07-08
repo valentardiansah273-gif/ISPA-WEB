@@ -217,7 +217,7 @@ def predict():
     finally:
         conn.close()
 
-    return render_template('result.html', hasil=hasil, persen=persen, nama=nama, umur=umur)
+    return render_template('result.html', hasil=hasil, persen=persen, nama=nama, umur=umur, debug_input=debug_input)
 
 
 # ================= RIWAYAT =================
