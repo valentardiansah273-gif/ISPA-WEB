@@ -164,15 +164,7 @@ def predict():
         for i in range(16):
             nilai = request.form.get(f"q{i}")
             val = float(nilai) if nilai else 1.0
-
-            # 🔥 HYBRID (REKOMENDASI TERBAIK)
-            if val <= 2:
-                val = 0
-            elif val == 3:
-                val = 0.5
-            else:
-                val = 1
-
+            val = 1 if val >= 3 else 0
         # ================= DATAFRAME =================
         input_data = [umur] + gejala
         input_df = pd.DataFrame([input_data], columns=fitur_urutan)
