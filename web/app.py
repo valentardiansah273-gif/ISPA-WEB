@@ -147,61 +147,46 @@ def logout():
 # ================= PREDICT =================
 @app.route('/predict', methods=['POST'])
 def predict():
-    if 'username' not in session:
-        return redirect('/login')
+try:
+    # Ambil input dari form sesuai urutan fitur
+    input_data = []
 
-    # Validasi model sudah ter-load
-    if model is None:
-        return "Model belum ter-load, silakan cek log server."
+    for fitur in fitur_urutan:
+        nilai = request.form.get(fitur)
 
-    try:
-        nama = request.form.get('nama', 'User')
-        umur = request.form.get('umur', '0')
+        if nilai is None or nilai == "":
+            nilai = 0  # default kalau kosong
+        else:
+            nilai = float(nilai)
 
-        jawaban_dict = {}
-        for i in range(16):
-            # Menggunakan .get dengan default agar tidak error KeyError
-            val = request.form.get(f'q{i}')
-            if val is None:
-                return f"Error: Data gejala ke-{i} tidak ditemukan. Pastikan name di HTML benar."
-            jawaban_dict[f'q{i}'] = float(val)
+        input_data.append(nilai)
 
-        # Mapping data
-        data_map = {
-            'Umur': float(umur),
-            'Batuk_Kering': jawaban_dict['q0'],
-            'Batuk_Berdahak': jawaban_dict['q1'],
-            'Demam': jawaban_dict['q2'],
-            'Pilek': jawaban_dict['q3'],
-            'Hidung_Tersumbat': jawaban_dict['q4'],
-            'Sesak_Napas': jawaban_dict['q5'],
-            'Nyeri_Tenggorokan': jawaban_dict['q6'],
-            'Sakit_Kepala': jawaban_dict['q7'],
-            'Mual_Muntah': jawaban_dict['q8'],
-            'Nyeri_Dada': jawaban_dict['q9'],
-            'Suara_Serak': jawaban_dict['q10'],
-            'Kelelahan': jawaban_dict['q11'],
-            'Berkeringat_Malam': jawaban_dict['q12'],
-            'Nafsu_Makan_Turun': jawaban_dict['q13'],
-            'Hilang_Penciuman': jawaban_dict['q14'],
-            'Nyeri_Saat_Menelan': jawaban_dict['q15'],
-        }
+    # Ubah ke numpy array
+    input_array = np.array(input_data).reshape(1, -1)
 
-        # Susun data sesuai urutan model
-        data_list = [data_map[f] for f in fitur_urutan]
-        
-        # Prediksi
-        input_scaled = scaler.transform(np.array(data_list).reshape(1, -1))
-        prob = model.predict_proba(input_scaled)[0][1]
-        persen = float(round(prob * 100, 2))
-        hasil = "ISPA" if prob > 0.5 else "Tidak ISPA"
+    # =========================
+    # WAJIB: SCALING (INI YANG SERING LUPA)
+    # =========================
+    input_scaled = scaler.transform(input_array)
 
-        # Kembalikan response
-        return render_template('result.html', hasil=hasil, persen=persen, nama=nama, umur=umur)
+    # Prediksi
+    hasil = model.predict(input_scaled)[0]
+    probabilitas = model.predict_proba(input_scaled)[0]
 
-    except Exception as e:
-        return f"Terjadi kesalahan saat memproses data: {str(e)}"
+    # Mapping hasil (opsional, sesuaikan label kamu)
+    if hasil == 1:
+        diagnosis = "Terindikasi ISPA"
+    else:
+        diagnosis = "Tidak Terindikasi ISPA"
 
+    return render_template(
+        'index.html',
+        prediction_text=diagnosis,
+        probability=round(max(probabilitas) * 100, 2)
+    )
+
+except Exception as e:
+    return f"Terjadi error: {str(e)}"
 
 # ================= RIWAYAT =================
 @app.route('/riwayat')
