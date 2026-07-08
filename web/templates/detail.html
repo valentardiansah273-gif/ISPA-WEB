@@ -14,9 +14,9 @@
         }
 
         .container {
-            max-width: 500px;
+            max-width: 520px;
             margin: auto;
-            background: #fff;
+            background: white;
             padding: 30px;
             border-radius: 20px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.15);
@@ -28,10 +28,10 @@
 
         .logo {
             width: 60px;
-            margin-bottom: 10px;
+            display: block;
+            margin: auto;
         }
 
-        /* circle */
         .circle {
             position: relative;
             width: 160px;
@@ -39,14 +39,18 @@
             margin: 20px auto;
         }
 
-        svg { transform: rotate(-90deg); }
+        svg {
+            transform: rotate(-90deg);
+        }
 
         circle {
             fill: none;
             stroke-width: 12;
         }
 
-        .bg { stroke: #eee; }
+        .bg {
+            stroke: #eee;
+        }
 
         .progress {
             stroke-dasharray: 440;
@@ -60,72 +64,73 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            font-size: 28px;
+            font-size: 26px;
             font-weight: bold;
         }
 
         .status {
-            font-size: 20px;
-            font-weight: bold;
             text-align: center;
+            font-weight: bold;
             margin-bottom: 20px;
         }
 
-        .pasien-info {
-            background: #f9f9f9;
+        .pasien {
+            background: #f5f5f5;
             padding: 15px;
-            border-radius: 12px;
-            margin-bottom: 25px;
+            border-radius: 10px;
+            margin-bottom: 20px;
         }
 
-        /* gejala */
-        .gejala-list h3 {
+        .gejala {
+            margin-top: 20px;
+        }
+
+        .item {
             margin-bottom: 15px;
         }
 
-        .gejala-item {
-            margin-bottom: 18px;
-        }
-
-        .gejala-title {
+        .label {
             font-size: 14px;
-            font-weight: 500;
+            margin-bottom: 5px;
         }
 
-        .bar-container {
+        .bar-bg {
             background: #eee;
-            border-radius: 10px;
             height: 8px;
-            margin: 6px 0;
+            border-radius: 10px;
             overflow: hidden;
         }
 
         .bar-fill {
             height: 8px;
+            width: 0%;
             border-radius: 10px;
             transition: 0.5s;
         }
 
-        .label {
+        .nilai {
             font-size: 12px;
             color: #666;
         }
 
-        /* tombol */
         .btn {
             display: block;
-            margin-top: 12px;
+            margin-top: 15px;
             padding: 12px;
-            border-radius: 10px;
-            text-decoration: none;
-            color: white;
-            font-weight: bold;
             text-align: center;
+            border-radius: 10px;
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
         }
 
-        .download { background: #28a745; }
-        .back { background: #333; }
+        .download {
+            background: #28a745;
+        }
 
+        .back {
+            background: #333;
+        }
     </style>
 </head>
 
@@ -133,12 +138,11 @@
 
 <div class="container">
 
-    <div style="text-align:center;">
-        <img src="https://cdn-icons-png.flaticon.com/512/2966/2966480.png" class="logo">
-        <h2>Detail Hasil Diagnosis</h2>
-    </div>
+    <img src="https://cdn-icons-png.flaticon.com/512/2966/2966480.png" class="logo">
 
-    <!-- circle -->
+    <h2 align="center">Detail Hasil</h2>
+
+    <!-- CIRCLE -->
     <div class="circle">
         <svg width="160" height="160">
             <circle cx="80" cy="80" r="70" class="bg"></circle>
@@ -149,75 +153,75 @@
 
     <div class="status" id="status"></div>
 
-    <!-- pasien -->
-    <div class="pasien-info">
+    <!-- DATA PASIEN -->
+    <div class="pasien">
         <b>Nama:</b> {{ data.nama }} <br>
         <b>Umur:</b> {{ data.umur }} tahun
     </div>
 
-    <!-- mapping pertanyaan -->
+    <!-- PERTANYAAN -->
     {% set pertanyaan = {
-        'q0': 'Batuk kering', 'q1': 'Batuk berdahak', 'q2': 'Demam', 'q3': 'Pilek',
-        'q4': 'Hidung tersumbat', 'q5': 'Sesak napas', 'q6': 'Nyeri tenggorokan',
-        'q7': 'Sakit kepala', 'q8': 'Mual / muntah', 'q9': 'Nyeri dada',
-        'q10': 'Suara serak', 'q11': 'Kelelahan', 'q12': 'Keringat malam',
-        'q13': 'Nafsu makan turun', 'q14': 'Hilang penciuman', 'q15': 'Nyeri saat menelan'
+        'q0': 'Batuk kering',
+        'q1': 'Batuk berdahak',
+        'q2': 'Demam',
+        'q3': 'Pilek',
+        'q4': 'Hidung tersumbat',
+        'q5': 'Sesak napas',
+        'q6': 'Nyeri tenggorokan',
+        'q7': 'Sakit kepala',
+        'q8': 'Mual / muntah',
+        'q9': 'Nyeri dada',
+        'q10': 'Suara serak',
+        'q11': 'Kelelahan',
+        'q12': 'Keringat malam',
+        'q13': 'Nafsu makan turun',
+        'q14': 'Hilang penciuman',
+        'q15': 'Nyeri saat menelan'
     } %}
 
-    <!-- gejala -->
-    <div class="gejala-list">
-        <h3>📊 Tingkat Keparahan Gejala</h3>
+    <!-- GEJALA -->
+    <div class="gejala">
+        <h3>Tingkat Keparahan Gejala (1–5)</h3>
 
         {% for key, val in jawaban.items() %}
-            {% set v = val | int %}
+        {% set persen = (val | int) * 20 %}
 
-            {% if v == 1 %}
-                {% set persen = 0 %}
-                {% set label = "Tidak" %}
-                {% set warna = "#28a745" %}
-            {% elif v == 3 %}
-                {% set persen = 50 %}
-                {% set label = "Kadang" %}
-                {% set warna = "#ffc107" %}
-            {% elif v == 5 %}
-                {% set persen = 100 %}
-                {% set label = "Sering" %}
-                {% set warna = "#dc3545" %}
-            {% endif %}
+        <div class="item">
+            <div class="label">
+                {{ pertanyaan[key] if key in pertanyaan else key }}
+            </div>
 
-            <div class="gejala-item">
-                <div class="gejala-title">
-                    {{ pertanyaan[key] }}
-                </div>
-
-                <div class="bar-container">
-                    <div class="bar-fill"
-                        data-width="{{ persen }}"
-                        data-color="{{ warna }}"></div>
-                    </div>
-                </div>
-
-                <div class="label">
-                    {{ label }} ({{ v }})
+            <div class="bar-bg">
+                <div class="bar-fill"
+                     data-width="{{ persen }}">
                 </div>
             </div>
 
+            <div class="nilai">
+                Tingkat: {{ val }}/5
+            </div>
+        </div>
         {% endfor %}
     </div>
 
-    <!-- tombol -->
     <a href="/download_pdf/{{ data.id }}" class="btn download">⬇ Download PDF</a>
     <a href="/riwayat" class="btn back">⬅ Kembali</a>
 
 </div>
 
 <script>
-    // isi bar
+    // BAR
     document.querySelectorAll('.bar-fill').forEach(el => {
-        el.style.width = el.dataset.width + '%';
+        let w = el.getAttribute('data-width');
+        el.style.width = w + '%';
+
+        // warna otomatis
+        if (w < 40) el.style.background = "#28a745";
+        else if (w < 70) el.style.background = "#ffc107";
+        else el.style.background = "#dc3545";
     });
 
-    // circle
+    // CIRCLE
     let persen = Number("{{ data.persen | default(0) }}");
     let circle = document.getElementById("circle");
     let text = document.getElementById("text");
@@ -229,25 +233,17 @@
 
     if (persen < 40) {
         circle.style.stroke = "#28a745";
-        status.innerHTML = "🟢 Risiko Rendah";
+        status.innerHTML = "Risiko Rendah";
         status.style.color = "#28a745";
     } else if (persen < 70) {
         circle.style.stroke = "#ffc107";
-        status.innerHTML = "🟡 Risiko Sedang";
+        status.innerHTML = "Risiko Sedang";
         status.style.color = "#ffc107";
     } else {
         circle.style.stroke = "#dc3545";
-        status.innerHTML = "🔴 Risiko Tinggi";
+        status.innerHTML = "Risiko Tinggi";
         status.style.color = "#dc3545";
     }
-
-    document.querySelectorAll('.bar-fill').forEach(el => {
-        let width = el.getAttribute('data-width');
-        let color = el.getAttribute('data-color');
-
-        el.style.width = width + '%';
-        el.style.background = color;
-    });
 </script>
 
 </body>
