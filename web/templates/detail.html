@@ -119,8 +119,8 @@
 
         .nilai {
             font-size: 12px;
-            color: #666;
             margin-top: 4px;
+            font-weight: 500;
         }
 
         .btn {
@@ -199,6 +199,10 @@
     <div class="gejala">
         <h3>Tingkat Keparahan Gejala (1–5)</h3>
 
+        <p style="font-size:12px; text-align:center; color:#666;">
+            1 = Tidak Ada | 2 = Sangat Ringan | 3 = Sedang | 4 = Parah | 5 = Sangat Parah
+        </p>
+
         {% for i in range(16) %}
         {% set key = 'q' ~ i %}
         {% set val = jawaban[key] | default(0) | int %}
@@ -212,7 +216,29 @@
             </div>
 
             <div class="nilai">
-                Tingkat: <b>{{ val }}/5</b>
+                Tingkat: <b>{{ val }}/5</b> -
+                <span
+                {% if val == 1 %} style="color:#28a745"
+                {% elif val == 2 %} style="color:#5cb85c"
+                {% elif val == 3 %} style="color:#ffc107"
+                {% elif val == 4 %} style="color:#ff8c00"
+                {% elif val == 5 %} style="color:#dc3545"
+                {% endif %}
+                >
+                {% if val == 1 %}
+                    Tidak Ada
+                {% elif val == 2 %}
+                    Sangat Ringan
+                {% elif val == 3 %}
+                    Sedang
+                {% elif val == 4 %}
+                    Parah
+                {% elif val == 5 %}
+                    Sangat Parah
+                {% else %}
+                    Tidak Diisi
+                {% endif %}
+                </span>
             </div>
         </div>
         {% endfor %}
@@ -224,7 +250,6 @@
 </div>
 
 <script>
-    // BAR ANIMATION
     document.querySelectorAll('.bar-fill').forEach(el => {
         let w = parseInt(el.getAttribute('data-width')) || 0;
         setTimeout(() => {
@@ -236,13 +261,11 @@
         else el.style.background = "linear-gradient(90deg,#dc3545,#ff6b6b)";
     });
 
-    // CIRCLE
     let persen = Number("{{ data.persen | default(0) }}") || 0;
     let circle = document.getElementById("circle");
     let text = document.getElementById("text");
     let status = document.getElementById("status");
 
-    // FIX penting: pastikan dasharray selalu ada
     circle.style.strokeDasharray = "440";
 
     let offset = 440 - (440 * persen / 100);
