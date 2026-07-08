@@ -201,7 +201,7 @@
 
         {% for i in range(16) %}
         {% set key = 'q' ~ i %}
-        {% set val = jawaban[key] | int %}
+        {% set val = jawaban[key] | default(0) | int %}
         {% set persen = val * 20 %}
 
         <div class="item">
@@ -241,6 +241,9 @@
     let circle = document.getElementById("circle");
     let text = document.getElementById("text");
     let status = document.getElementById("status");
+
+    // FIX penting: pastikan dasharray selalu ada
+    circle.style.strokeDasharray = "440";
 
     let offset = 440 - (440 * persen / 100);
 

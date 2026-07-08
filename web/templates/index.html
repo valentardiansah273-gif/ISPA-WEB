@@ -41,14 +41,35 @@
         }
         #progress-text { text-align: center; font-size: 14px; margin-top: 5px; font-weight: bold; }
 
-        .question { margin-bottom: 18px; padding: 18px; border-radius: 12px; background: #f9f9f9; }
+        .question { 
+            margin-bottom: 18px; 
+            padding: 18px; 
+            border-radius: 12px; 
+            background: #f9f9f9;
+            transition: 0.2s;
+        }
+
+        .question:hover {
+            background: #f1f7ff;
+        }
         
         .options { display: flex; gap: 8px; flex-wrap: wrap; }
         .options label { flex: 1; min-width: 120px; cursor: pointer; }
         .options span {
-            display: block; text-align: center; padding: 10px 5px; border-radius: 8px;
-            background: #e0e0e0; font-size: 12px; font-weight: 600;
+            display: block; 
+            text-align: center; 
+            padding: 10px 5px; 
+            border-radius: 8px;
+            background: #e0e0e0; 
+            font-size: 12px; 
+            font-weight: 600;
+            transition: 0.2s;
         }
+
+        .options span:hover {
+            transform: scale(1.05);
+        }
+
         .options input { display: none; }
         
         .options input[value="1"]:checked + span { background: #28a745; color: white; }
@@ -61,7 +82,13 @@
             width: 100%; padding: 15px; margin-top: 20px;
             background: #007bff; border: none; color: white; 
             font-size: 18px; border-radius: 12px; cursor: pointer; font-weight: bold;
+            transition: 0.2s;
         }
+
+        button:hover {
+            background: #0056b3;
+        }
+
         button:disabled { background: #ccc; cursor: not-allowed; }
 
         .btn-back {
@@ -116,11 +143,11 @@
 
         {% for i in range(pertanyaan|length) %}
         <div class="question">
-            <p>{{ i+1 }}. {{ pertanyaan[i] }}</p>
+            <p><b>{{ i+1 }}.</b> {{ pertanyaan[i] }}</p>
             <div class="options">
                 <label><input type="radio" name="q{{i}}" value="1" required><span>Tidak Ada</span></label>
                 <label><input type="radio" name="q{{i}}" value="2"><span>Sangat Ringan</span></label>
-                <label><input type="radio" name="q{{i}}" value="3"><span>Sedang</span></label>
+                <label><input type="radio" name="q{{i}}" value="3"><span>Ringan</span></label>
                 <label><input type="radio" name="q{{i}}" value="4"><span>Parah</span></label>
                 <label><input type="radio" name="q{{i}}" value="5"><span>Sangat Parah</span></label>
             </div>
@@ -157,7 +184,7 @@
         document.querySelectorAll('input[type="radio"]').forEach(r => {
             r.addEventListener("change", updateProgress);
         });
-        updateProgress(); // supaya tetap update kalau reload
+        updateProgress();
     });
 </script>
 
