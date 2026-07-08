@@ -165,11 +165,13 @@ def predict():
             nilai = request.form.get(f"q{i}")
             val = float(nilai) if nilai else 1.0
 
-            # 🔥 KONVERSI 1–5 → 0–1 (HALUS)
-            val = (val - 1) / 4
-
-            gejala.append(val)
-            jawaban_dict[f"q{i}"] = val
+            # 🔥 HYBRID (REKOMENDASI TERBAIK)
+            if val <= 2:
+                val = 0
+            elif val == 3:
+                val = 0.5
+            else:
+                val = 1
 
         # ================= DATAFRAME =================
         input_data = [umur] + gejala
