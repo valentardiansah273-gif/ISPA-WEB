@@ -148,44 +148,57 @@ def logout():
 @app.route('/predict', methods=['POST'])
 def predict():
     try:
-        input_data = []
-        
-        # 1. Ambil q0 sampai q15
+        # =========================
+        # 1. PENGAMBILAN DATA
+        # =========================
+        # Pastikan umur adalah float
+        umur = float(request.form.get("umur", 0))
+
+        # Ambil gejala q0-q15
+        gejala = []
         for i in range(16):
             nilai = request.form.get(f"q{i}")
-            if nilai is None or nilai == "":
-                nilai = 0
-            else:
-                nilai = float(nilai)
-            input_data.append(nilai)
+            # Jika input kosong, beri nilai 0
+            val = float(nilai) if nilai and nilai != "" else 0.0
+            gejala.append(val)
 
-        # 2. Tambahkan umur
-        # Pastikan posisi insert(0, umur) sesuai dengan urutan saat training.
-        # Jika saat training umur ada di urutan terakhir, gunakan input_data.append(umur)
-        umur = float(request.form.get("umur", 0))
-        input_data.insert(0, umur)
+        # Gabungkan (URUTAN WAJIB SAMA DENGAN SAAT TRAINING)
+        input_data = [umur] + gejala
 
-        # 3. Ubah ke array dan proses
+        # Debugging (lihat log Vercel untuk memastikan data masuk dengan benar)
+        print("INPUT DATA:", input_data)
+
+        # =========================
+        # 2. TRANSFORM & PREDICT
+        # =========================
+        # Reshape menjadi 2D array (1 baris, N kolom)
         input_array = np.array(input_data).reshape(1, -1)
         
-        # Scaling (WAJIB menggunakan scaler yang sudah di-fit saat training)
+        # Scaling (Gunakan scaler yang dimuat dari file .pkl)
         input_scaled = scaler.transform(input_array)
 
-        # 4. Prediksi
+        # Prediksi
         hasil = model.predict(input_scaled)[0]
         probabilitas = model.predict_proba(input_scaled)[0]
 
-        # 5. Mapping hasil
+        # =========================
+        # 3. OUTPUT
+        # =========================
         diagnosis = "Terindikasi ISPA" if hasil == 1 else "Tidak Terindikasi ISPA"
+        
+        # Ambil probabilitas kelas positif (biasanya index 1)
+        # Jika model biner, max() mungkin tidak tepat jika ingin akurasi kelas tertentu
+        prob_persen = round(float(probabilitas[1]) * 100, 2)
 
         return render_template(
             'index.html',
             prediction_text=diagnosis,
-            probability=round(max(probabilitas) * 100, 2)
+            probability=prob_persen
         )
 
     except Exception as e:
-        return f"Error: {str(e)}"
+        # Jika terjadi error, pesan akan tampil di browser
+        return f"Terjadi kesalahan saat memproses data: {str(e)}"
     
 # ================= RIWAYAT =================
 @app.route('/riwayat')
