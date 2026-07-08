@@ -10,7 +10,8 @@ import psycopg2.extras
 import joblib
 import json
 import io
-import re  # 🔥 tambahan validasi
+import re  
+import numpy as np
 
 app = Flask(__name__)
 app.secret_key = "secret"
@@ -20,6 +21,7 @@ model = joblib.load("model_saved/model_rf.pkl")
 
 # 🔥 load urutan fitur (WAJIB)
 fitur_urutan = joblib.load("model_saved/fitur_urutan.pkl")
+scaler = joblib.load("model_saved/scaler.pkl")
 
 # ================= DATABASE URL =================
 DATABASE_URL = "postgresql://usrcincbrlnv5ctctci3:IBfGxEleM4JgSh94b4slGSAjUVqw1K@bzv6ndii9goa0jgadd44-postgresql.services.clever-cloud.com:50013/bzv6ndii9goa0jgadd44"
@@ -154,64 +156,64 @@ def predict():
     if not nama or not umur:
         return "Nama atau umur tidak boleh kosong!"
 
-    umur = int(umur)
-
+    # 1. Kumpulkan data ke dictionary
     jawaban_dict = {}
     for i in range(16):
         val = int(request.form.get(f'q{i}', 1))
         jawaban_dict[f'q{i}'] = val
 
-    def norm_skala(nilai_skala):
-        return (float(nilai_skala) - 1.0) / 4.0
-
+    # 2. Sesuaikan keys dengan nama fitur yang ada di fitur_urutan.pkl
+    # Pastikan urutan ini sama dengan saat training!
     data_map = {
-        'Umur': umur,
-        'Batuk_Kering': norm_skala(jawaban_dict['q0']),
-        'Batuk_Berdahak': norm_skala(jawaban_dict['q1']),
-        'Demam': norm_skala(jawaban_dict['q2']),
-        'Pilek': norm_skala(jawaban_dict['q3']),
-        'Hidung_Tersumbat': norm_skala(jawaban_dict['q4']),
-        'Sesak_Napas': norm_skala(jawaban_dict['q5']),
-        'Nyeri_Tenggorokan': norm_skala(jawaban_dict['q6']),
-        'Sakit_Kepala': norm_skala(jawaban_dict['q7']),
-        'Mual_Muntah': norm_skala(jawaban_dict['q8']),
-        'Nyeri_Dada': norm_skala(jawaban_dict['q9']),
-        'Suara_Serak': norm_skala(jawaban_dict['q10']),
-        'Kelelahan': norm_skala(jawaban_dict['q11']),
-        'Berkeringat_Malam': norm_skala(jawaban_dict['q12']),
-        'Nafsu_Makan_Turun': norm_skala(jawaban_dict['q13']),
-        'Hilang_Penciuman': norm_skala(jawaban_dict['q14']),
-        'Nyeri_Saat_Menelan': norm_skala(jawaban_dict['q15']),
+        'Umur': float(umur),
+        'Batuk_Kering': float(jawaban_dict['q0']),
+        'Batuk_Berdahak': float(jawaban_dict['q1']),
+        'Demam': float(jawaban_dict['q2']),
+        'Pilek': float(jawaban_dict['q3']),
+        'Hidung_Tersumbat': float(jawaban_dict['q4']),
+        'Sesak_Napas': float(jawaban_dict['q5']),
+        'Nyeri_Tenggorokan': float(jawaban_dict['q6']),
+        'Sakit_Kepala': float(jawaban_dict['q7']),
+        'Mual_Muntah': float(jawaban_dict['q8']),
+        'Nyeri_Dada': float(jawaban_dict['q9']),
+        'Suara_Serak': float(jawaban_dict['q10']),
+        'Kelelahan': float(jawaban_dict['q11']),
+        'Berkeringat_Malam': float(jawaban_dict['q12']),
+        'Nafsu_Makan_Turun': float(jawaban_dict['q13']),
+        'Hilang_Penciuman': float(jawaban_dict['q14']),
+        'Nyeri_Saat_Menelan': float(jawaban_dict['q15']),
     }
 
-    data = [data_map[f] for f in fitur_urutan]
+    # 3. Susun data sesuai urutan yang dipakai model (fitur_urutan)
+    data_list = [data_map[f] for f in fitur_urutan]
+    
+    # 4. Ubah ke array 2D untuk scaler
+    input_array = np.array(data_list).reshape(1, -1)
+    
+    # 5. NORMALISASI menggunakan scaler yang sudah di-load di atas
+    # Hapus fungsi norm_skala manual, gunakan scaler.transform ini:
+    input_scaled = scaler.transform(input_array)
 
-    prob = model.predict_proba([data])[0][1]
+    # 6. Prediksi menggunakan data yang sudah di-scale
+    prob = model.predict_proba(input_scaled)[0][1]
     persen = float(round(prob * 100, 2))
     hasil = "ISPA" if prob > 0.5 else "Tidak ISPA"
 
+    # 7. Simpan ke database
     jawaban_json = json.dumps(jawaban_dict)
-
     conn = get_db_connection()
     try:
         cursor = conn.cursor()
         cursor.execute("""
-            INSERT INTO riwayat 
-            (username, nama, umur, hasil, persen, jawaban) 
+            INSERT INTO riwayat (username, nama, umur, hasil, persen, jawaban) 
             VALUES (%s, %s, %s, %s, %s, %s)
-        """, (session['username'], nama, umur, hasil, persen, jawaban_json))
+        """, (session['username'], nama, int(umur), hasil, persen, jawaban_json))
         conn.commit()
         cursor.close()
     finally:
         conn.close()
 
-    return render_template(
-        'result.html',
-        hasil=hasil,
-        persen=persen,
-        nama=nama,
-        umur=umur
-    )
+    return render_template('result.html', hasil=hasil, persen=persen, nama=nama, umur=umur)
 
 
 # ================= RIWAYAT =================
