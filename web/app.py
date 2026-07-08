@@ -150,30 +150,44 @@ def logout():
 # ================= PREDICT =================
 @app.route('/predict', methods=['POST'])
 def predict():
-    probabilitas = None  # 🔥 TAMBAHAN
-    hasil = None         # 🔥 TAMBAHAN
+    probabilitas = None
+    hasil = None
 
     try:
         if 'username' not in session:
             return redirect('/login')
 
         # ================= INPUT =================
-        nama = request.form.get("nama")
-        umur = float(request.form.get("umur", 0))
+        nama = request.form.get("nama", "").strip()
+        umur_raw = request.form.get("umur", 0)
+
+        try:
+            umur = float(umur_raw)
+        except:
+            umur = 0.0
 
         gejala = []
         jawaban_dict = {}
 
         for i in range(16):
             nilai = request.form.get(f"q{i}")
-            val = float(nilai) if nilai else 1.0
+
+            try:
+                val = float(nilai) if nilai else 1.0
+            except:
+                val = 1.0
+
             val = 1 if val >= 3 else 0
 
-            gejala.append(val)  # 🔥 FIX WAJIB
-            jawaban_dict[f"q{i}"] = val  # 🔥 TAMBAHAN
+            gejala.append(val)
+            jawaban_dict[f"q{i}"] = int(val)
 
         # ================= DATAFRAME =================
         input_data = [umur] + gejala
+
+        if len(input_data) != len(fitur_urutan):
+            raise ValueError("Jumlah fitur tidak sesuai dengan model")
+
         input_df = pd.DataFrame([input_data], columns=fitur_urutan)
 
         # ================= SCALING =================
@@ -181,21 +195,26 @@ def predict():
 
         # ================= PREDIKSI =================
         hasil = model.predict(input_scaled)[0]
-        probabilitas = model.predict_proba(input_scaled)[0]
 
-        # 🔥 FIX: ISPA = 0 (bukan 1)
-        kelas = model.classes_
-        if 0 in kelas:
-            idx_ispa = list(kelas).index(0)
+        if hasattr(model, "predict_proba"):
+            probabilitas = model.predict_proba(input_scaled)[0]
         else:
-            idx_ispa = 0  # fallback
+            probabilitas = [0.5, 0.5]  # fallback aman
+
+        # ================= AMBIL INDEX ISPA =================
+        kelas = list(model.classes_)
+
+        if 0 in kelas:
+            idx_ispa = kelas.index(0)
+        else:
+            idx_ispa = 0
 
         persen = round(float(probabilitas[idx_ispa]) * 100, 2)
 
-        # 🔥 FIX DIAGNOSIS
+        # ================= DIAGNOSIS =================
         diagnosis = "ISPA" if hasil == 0 else "Tidak ISPA"
 
-        # ================= 🔥 TOP 3 GEJALA =================
+        # ================= TOP 3 GEJALA =================
         top3 = sorted(
             [(f"q{i}", gejala[i]) for i in range(len(gejala))],
             key=lambda x: x[1],
@@ -204,12 +223,15 @@ def predict():
 
         # ================= DEBUG =================
         print("=== DEBUG WEB ===")
+        print("Nama:", nama)
+        print("Umur:", umur)
         print("Gejala:", gejala)
         print("Input:", input_df)
         print("Scaled:", input_scaled)
         print("Prob:", probabilitas)
         print("Classes:", kelas)
         print("Persen:", persen)
+        print("Hasil:", hasil)
 
         # ================= SIMPAN DB =================
         conn = get_db_connection()
@@ -238,15 +260,18 @@ def predict():
             nama=nama,
             umur=umur,
             top3=top3,
-            debug_input=input_df.to_dict(),
+            diagnosis=diagnosis,  # 🔥 tambahan penting
+            debug_input=input_df.to_dict()
         )
 
     except Exception as e:
         print("ERROR:", e)
         print("=== CEK MODEL ===")
-        print("Classes:", model.classes_)
+        if hasattr(model, "classes_"):
+            print("Classes:", model.classes_)
         print("Probabilitas:", probabilitas)
         print("Prediksi:", hasil)
+
         return f"<h2>Error: {str(e)}</h2>"
     
 # ================= RIWAYAT =================

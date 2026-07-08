@@ -183,12 +183,14 @@
     <div class="gejala">
         <h3>Tingkat Keparahan Gejala (1–5)</h3>
 
-        {% for key, val in jawaban.items() %}
-        {% set persen = (val | int) * 20 %}
+        {% for i in range(16) %}
+        {% set key = 'q' ~ i %}
+        {% set val = jawaban[key] | int %}
+        {% set persen = val * 20 %}
 
         <div class="item">
             <div class="label">
-                {{ pertanyaan[key] if key in pertanyaan else key }}
+                {{ pertanyaan[key] }}
             </div>
 
             <div class="bar-bg">
@@ -210,19 +212,18 @@
 </div>
 
 <script>
-    // BAR
+    // BAR (fix biar selalu sesuai input)
     document.querySelectorAll('.bar-fill').forEach(el => {
-        let w = el.getAttribute('data-width');
+        let w = parseInt(el.getAttribute('data-width')) || 0;
         el.style.width = w + '%';
 
-        // warna otomatis
         if (w < 40) el.style.background = "#28a745";
         else if (w < 70) el.style.background = "#ffc107";
         else el.style.background = "#dc3545";
     });
 
     // CIRCLE
-    let persen = Number("{{ data.persen | default(0) }}");
+    let persen = Number("{{ data.persen | default(0) }}") || 0;
     let circle = document.getElementById("circle");
     let text = document.getElementById("text");
     let status = document.getElementById("status");

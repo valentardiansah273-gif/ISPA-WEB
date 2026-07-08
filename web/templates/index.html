@@ -35,7 +35,8 @@
         }
         .progress-container { width: 100%; height: 12px; background: #ddd; border-radius: 10px; }
         #progress-bar {
-            height: 100%; width: 0%; background: linear-gradient(90deg, #4facfe, #00c6ff);
+            height: 100%; width: 0%;
+            background: linear-gradient(90deg, #4facfe, #00c6ff);
             border-radius: 10px; transition: 0.3s;
         }
         #progress-text { text-align: center; font-size: 14px; margin-top: 5px; font-weight: bold; }
@@ -76,7 +77,8 @@
 <div class="container">
     <h2>🩺 Form Prediksi Risiko ISPA</h2>
 
-    <form method="POST" action="/predict" onsubmit="this.querySelector('button').disabled=true; this.querySelector('button').innerText='Memproses...';">
+    <form method="POST" action="/predict" autocomplete="off"
+        onsubmit="handleSubmit(this)">
         
         <div class="input-group">
             <label>👤 Nama Pasien</label>
@@ -117,10 +119,10 @@
             <p>{{ i+1 }}. {{ pertanyaan[i] }}</p>
             <div class="options">
                 <label><input type="radio" name="q{{i}}" value="1" required><span>Tidak Ada</span></label>
-                <label><input type="radio" name="q{{i}}" value="2" required><span>Sangat Ringan</span></label>
-                <label><input type="radio" name="q{{i}}" value="3" required><span>Sedang</span></label>
-                <label><input type="radio" name="q{{i}}" value="4" required><span>Parah</span></label>
-                <label><input type="radio" name="q{{i}}" value="5" required><span>Sangat Parah</span></label>
+                <label><input type="radio" name="q{{i}}" value="2"><span>Sangat Ringan</span></label>
+                <label><input type="radio" name="q{{i}}" value="3"><span>Sedang</span></label>
+                <label><input type="radio" name="q{{i}}" value="4"><span>Parah</span></label>
+                <label><input type="radio" name="q{{i}}" value="5"><span>Sangat Parah</span></label>
             </div>
         </div>
         {% endfor %}
@@ -132,16 +134,31 @@
 
 <script>
     const total = 16;
+
     function updateProgress() {
         let answered = 0;
         for (let i = 0; i < total; i++) {
-            if (document.querySelector('input[name="q' + i + '"]:checked')) answered++;
+            if (document.querySelector('input[name="q' + i + '"]:checked')) {
+                answered++;
+            }
         }
         let percent = (answered / total) * 100;
         document.getElementById("progress-bar").style.width = percent + "%";
         document.getElementById("progress-text").innerText = answered + " / " + total + " terisi";
     }
-    document.querySelectorAll('input[type="radio"]').forEach(r => r.addEventListener("change", updateProgress));
+
+    function handleSubmit(form) {
+        const btn = form.querySelector('button[type="submit"]');
+        btn.disabled = true;
+        btn.innerText = 'Memproses...';
+    }
+
+    document.addEventListener("DOMContentLoaded", function() {
+        document.querySelectorAll('input[type="radio"]').forEach(r => {
+            r.addEventListener("change", updateProgress);
+        });
+        updateProgress(); // supaya tetap update kalau reload
+    });
 </script>
 
 </body>
