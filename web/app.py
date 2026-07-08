@@ -158,10 +158,6 @@ def predict():
         nama = request.form.get("nama")
         umur = float(request.form.get("umur", 0))
 
-        # fungsi konversi 1–5 ➝ 0–1
-        def convert_1_5_to_0_1(x):
-            return (x - 1) / 4
-
         gejala = []
         jawaban_dict = {}
 
@@ -169,11 +165,8 @@ def predict():
             nilai = request.form.get(f"q{i}")
             val = float(nilai) if nilai else 1.0
 
-            # konversi
-            val_konversi = convert_1_5_to_0_1(val)
-
-            gejala.append(val_konversi)
-            jawaban_dict[f"q{i}"] = val  # simpan asli
+            gejala.append(val)   # ⬅️ LANGSUNG pakai 1–5
+            jawaban_dict[f"q{i}"] = val
 
         # ================= DATAFRAME =================
         input_data = [umur] + gejala
