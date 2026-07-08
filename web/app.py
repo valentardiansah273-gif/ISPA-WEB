@@ -352,66 +352,111 @@ def download_pdf(id):
 
     teks_skala = {
         1: "1 (Tidak Ada)",
-        2: "2 (Ringan)",
+        2: "2 (Sangat Ringan)",
         3: "3 (Sedang)",
         4: "4 (Parah)",
-        5: "5 (Sangat Berat)"
+        5: "5 (Sangat Parah)"
     }
 
+    # ====== BUAT PDF ======
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(buffer)
     styles = getSampleStyleSheet()
     elements = []
 
-    elements.append(Paragraph("<b>HASIL DIAGNOSIS ISPA</b>", styles['Title']))
+    # ====== JUDUL ======
+    elements.append(Paragraph("<b>HASIL ANALISIS KESEHATAN</b>", styles['Title']))
     elements.append(Spacer(1, 10))
-    elements.append(Paragraph(f"Tanggal: {datetime.now().strftime('%d-%m-%Y %H:%M')}", styles['Normal']))
+
+    # ====== TANGGAL ======
+    elements.append(Paragraph(
+        f"Tanggal: {datetime.now().strftime('%d-%m-%Y %H:%M')}",
+        styles['Normal']
+    ))
     elements.append(Spacer(1, 20))
 
-    pasien = [["Nama", data['nama']], ["Umur", str(data['umur'])]]
+    # ====== DATA PASIEN ======
+    elements.append(Paragraph("<b>Data Pasien</b>", styles['Heading2']))
+
+    pasien = [
+        ["Nama", data['nama']],
+        ["Umur", f"{data['umur']} tahun"]
+    ]
+
     table_pasien = Table(pasien, colWidths=[100, 300])
     table_pasien.setStyle(TableStyle([
         ('GRID', (0,0), (-1,-1), 1, colors.black),
         ('BACKGROUND', (0,0), (-1,-1), colors.whitesmoke)
     ]))
-    elements.append(Paragraph("<b>Data Pasien</b>", styles['Heading2']))
+
     elements.append(table_pasien)
     elements.append(Spacer(1, 20))
 
-    table_data = [["No", "Gejala", "Tingkat Keparahan"]]
-    for i, (key, value) in enumerate(jawaban.items()):
-        keterangan = teks_skala.get(int(value), str(value))
-        table_data.append([i + 1, pertanyaan.get(key, key), keterangan])
+    # ====== DATA GEJALA ======
+    elements.append(Paragraph("<b>Data Gejala</b>", styles['Heading2']))
 
-    table = Table(table_data, colWidths=[50, 230, 120])
+    table_data = [["No", "Gejala", "Tingkat Keparahan"]]
+
+    for i, key in enumerate(pertanyaan.keys()):
+        val = int(jawaban.get(key, 0))
+        keterangan = teks_skala.get(val, "Tidak Diisi")
+
+        table_data.append([
+            i + 1,
+            pertanyaan[key],
+            keterangan
+        ])
+
+    table = Table(table_data, colWidths=[40, 240, 140])
     table.setStyle(TableStyle([
         ('BACKGROUND', (0,0), (-1,0), colors.lightblue),
-        ('GRID', (0,0), (-1,-1), 1, colors.black)
+        ('GRID', (0,0), (-1,-1), 1, colors.black),
+        ('ALIGN', (0,0), (-1,0), 'CENTER')
     ]))
-    elements.append(Paragraph("<b>Data Gejala</b>", styles['Heading2']))
+
     elements.append(table)
     elements.append(Spacer(1, 20))
 
-    warna = colors.red if data['hasil'] == "ISPA" else colors.green
-    hasil_box = Table([[data['hasil']]], colWidths=[400])
-    hasil_box.setStyle(TableStyle([
-        ('BACKGROUND', (0,0), (-1,-1), warna),
-        ('TEXTCOLOR', (0,0), (-1,-1), colors.white),
-        ('ALIGN', (0,0), (-1,-1), 'CENTER'),
-        ('FONTSIZE', (0,0), (-1,-1), 16),
-    ]))
-    elements.append(Paragraph("<b>Hasil Diagnosis</b>", styles['Heading2']))
-    elements.append(hasil_box)
-    elements.append(Spacer(1, 15))
-    elements.append(Paragraph(f"Tingkat Risiko: <b>{data['persen']}%</b>", styles['Normal']))
+    # ====== HASIL ANALISIS (TANPA ISPA) ======
+    elements.append(Paragraph("<b>Hasil Analisis</b>", styles['Heading2']))
+    elements.append(Spacer(1, 10))
 
+    # Status berdasarkan persen
+    persen = float(data['persen'])
+
+    if persen < 40:
+        status = "Risiko Rendah"
+        warna = colors.green
+    elif persen < 70:
+        status = "Risiko Sedang"
+        warna = colors.orange
+    else:
+        status = "Risiko Tinggi"
+        warna = colors.red
+
+    # Box hasil
+    hasil_box = Table([
+        ["Status", status],
+        ["Tingkat Risiko", f"{persen}%"]
+    ], colWidths=[150, 250])
+
+    hasil_box.setStyle(TableStyle([
+        ('GRID', (0,0), (-1,-1), 1, colors.black),
+        ('BACKGROUND', (0,0), (-1,0), colors.whitesmoke),
+        ('TEXTCOLOR', (1,0), (1,0), warna),
+        ('TEXTCOLOR', (1,1), (1,1), warna),
+    ]))
+
+    elements.append(hasil_box)
+
+    # ====== BUILD PDF ======
     doc.build(elements)
     buffer.seek(0)
 
     return Response(
         buffer,
         mimetype='application/pdf',
-        headers={"Content-Disposition": "attachment;filename=hasil_prediksi.pdf"}
+        headers={"Content-Disposition": "attachment;filename=hasil_analisis.pdf"}
     )
 
 
