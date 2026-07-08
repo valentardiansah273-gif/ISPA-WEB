@@ -150,6 +150,9 @@ def logout():
 # ================= PREDICT =================
 @app.route('/predict', methods=['POST'])
 def predict():
+    probabilitas = None  # 🔥 TAMBAHAN
+    hasil = None         # 🔥 TAMBAHAN
+
     try:
         if 'username' not in session:
             return redirect('/login')
@@ -165,6 +168,10 @@ def predict():
             nilai = request.form.get(f"q{i}")
             val = float(nilai) if nilai else 1.0
             val = 1 if val >= 3 else 0
+
+            gejala.append(val)  # 🔥 FIX WAJIB
+            jawaban_dict[f"q{i}"] = val  # 🔥 TAMBAHAN
+
         # ================= DATAFRAME =================
         input_data = [umur] + gejala
         input_df = pd.DataFrame([input_data], columns=fitur_urutan)
@@ -176,19 +183,19 @@ def predict():
         hasil = model.predict(input_scaled)[0]
         probabilitas = model.predict_proba(input_scaled)[0]
 
-        # 🔥 FIX AMAN AMBIL INDEX ISPA
+        # 🔥 FIX: ISPA = 0 (bukan 1)
         kelas = model.classes_
-        if 1 in kelas:
-            idx_ispa = list(kelas).index(1)
+        if 0 in kelas:
+            idx_ispa = list(kelas).index(0)
         else:
-            idx_ispa = 0  # fallback biar gak crash
+            idx_ispa = 0  # fallback
 
         persen = round(float(probabilitas[idx_ispa]) * 100, 2)
 
-        diagnosis = "ISPA" if hasil == 1 else "Tidak ISPA"
+        # 🔥 FIX DIAGNOSIS
+        diagnosis = "ISPA" if hasil == 0 else "Tidak ISPA"
 
-        # ================= 🔥 TAMBAHAN TOP 3 GEJALA =================
-        # ambil 3 gejala dengan nilai tertinggi
+        # ================= 🔥 TOP 3 GEJALA =================
         top3 = sorted(
             [(f"q{i}", gejala[i]) for i in range(len(gejala))],
             key=lambda x: x[1],
@@ -197,6 +204,7 @@ def predict():
 
         # ================= DEBUG =================
         print("=== DEBUG WEB ===")
+        print("Gejala:", gejala)
         print("Input:", input_df)
         print("Scaled:", input_scaled)
         print("Prob:", probabilitas)
@@ -226,7 +234,7 @@ def predict():
         # ================= RETURN =================
         return render_template(
             "result.html",
-            persen=persen,  # 🔥 pakai yang sudah dihitung
+            persen=persen,
             nama=nama,
             umur=umur,
             top3=top3,
