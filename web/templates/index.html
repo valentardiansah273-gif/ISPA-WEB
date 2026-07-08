@@ -5,48 +5,28 @@
     <title>Prediksi Risiko ISPA</title>
 
     <style>
-        * {
-            box-sizing: border-box;
-        }
+        * { box-sizing: border-box; }
 
         body {
             font-family: 'Segoe UI', sans-serif;
             background: linear-gradient(135deg, #4facfe, #00f2fe);
-            margin: 0;
-            padding: 0;
+            margin: 0; padding: 0;
         }
 
         .container {
-            width: 90%;
-            max-width: 800px;
-            margin: 40px auto;
+            width: 90%; max-width: 800px; margin: 40px auto;
             background: rgba(255, 255, 255, 0.95);
-            padding: 30px;
-            border-radius: 20px;
+            padding: 30px; border-radius: 20px;
             box-shadow: 0px 10px 30px rgba(0,0,0,0.2);
         }
 
-        h2 {
-            text-align: center;
-            color: #333;
-        }
+        h2 { text-align: center; color: #333; }
 
-        .input-group {
-            margin-bottom: 15px;
-        }
-
-        .input-group label {
-            font-weight: 600;
-            display: block;
-            margin-bottom: 5px;
-        }
-
+        .input-group { margin-bottom: 15px; }
+        .input-group label { font-weight: 600; display: block; margin-bottom: 5px; }
         .input-group input {
-            width: 100%;
-            padding: 12px;
-            border-radius: 10px;
-            border: 1px solid #ccc;
-            outline: none;
+            width: 100%; padding: 12px; border-radius: 10px;
+            border: 1px solid #ccc; outline: none;
         }
 
         .progress-wrapper {
@@ -62,11 +42,11 @@
 
         .question { margin-bottom: 18px; padding: 18px; border-radius: 12px; background: #f9f9f9; }
         
-        .options { display: flex; gap: 8px; }
-        .options label { flex: 1; cursor: pointer; }
+        .options { display: flex; gap: 8px; flex-wrap: wrap; }
+        .options label { flex: 1; min-width: 120px; cursor: pointer; }
         .options span {
-            display: block; text-align: center; padding: 12px 5px; border-radius: 10px;
-            background: #e0e0e0; font-size: 13px; font-weight: 500;
+            display: block; text-align: center; padding: 10px 5px; border-radius: 8px;
+            background: #e0e0e0; font-size: 12px; font-weight: 600;
         }
         .options input { display: none; }
         
@@ -81,8 +61,8 @@
             background: #007bff; border: none; color: white; 
             font-size: 18px; border-radius: 12px; cursor: pointer; font-weight: bold;
         }
+        button:disabled { background: #ccc; cursor: not-allowed; }
 
-        /* TOMBOL TAMBAHAN */
         .btn-back {
             display: block; width: 100%; padding: 15px; margin-top: 10px;
             background: #6c757d; color: white; text-align: center;
@@ -96,16 +76,16 @@
 <div class="container">
     <h2>🩺 Form Prediksi Risiko ISPA</h2>
 
-    <form method="POST" action="/predict">
+    <form method="POST" action="/predict" onsubmit="this.querySelector('button').disabled=true; this.querySelector('button').innerText='Memproses...';">
         
         <div class="input-group">
             <label>👤 Nama Pasien</label>
-            <input type="text" name="nama" required placeholder="Masukkan nama Anda">
+            <input type="text" name="nama" required placeholder="Masukkan nama lengkap Anda">
         </div>
 
         <div class="input-group">
             <label>🎂 Umur</label>
-            <input type="number" name="umur" required min="1" placeholder="Masukkan umur Anda">
+            <input type="number" name="umur" required min="1" placeholder="Masukkan usia Anda">
         </div>
 
         <div class="progress-wrapper">
@@ -114,44 +94,54 @@
         </div>
 
         {% set pertanyaan = [
-            "Batuk kering", "Batuk berdahak", "Demam", "Pilek", "Hidung tersumbat", 
-            "Sesak napas", "Nyeri tenggorokan", "Sakit kepala", "Mual / muntah", 
-            "Nyeri dada", "Suara serak", "Kelelahan", "Keringat malam", 
-            "Nafsu makan turun", "Hilang penciuman", "Nyeri saat menelan"
+            "Apakah Anda mengalami batuk kering terus-menerus?",
+            "Apakah Anda mengeluarkan dahak saat batuk?",
+            "Apakah Anda merasa demam atau suhu tubuh meningkat?",
+            "Apakah Anda mengalami pilek atau hidung berair?",
+            "Apakah hidung Anda terasa tersumbat?",
+            "Apakah Anda merasa sesak saat bernapas?",
+            "Apakah tenggorokan Anda terasa sakit atau perih?",
+            "Apakah Anda mengalami sakit kepala?",
+            "Apakah Anda merasa mual atau ingin muntah?",
+            "Apakah Anda merasakan nyeri pada dada?",
+            "Apakah suara Anda terdengar serak?",
+            "Apakah Anda merasa tubuh sangat lelah atau lemas?",
+            "Apakah Anda sering berkeringat di malam hari?",
+            "Apakah nafsu makan Anda menurun drastis?",
+            "Apakah kemampuan penciuman Anda berkurang/hilang?",
+            "Apakah Anda merasa sakit saat menelan makanan/minuman?"
         ] %}
 
         {% for i in range(pertanyaan|length) %}
         <div class="question">
             <p>{{ i+1 }}. {{ pertanyaan[i] }}</p>
             <div class="options">
-                {% for val in range(1, 6) %}
-                <label>
-                    <input type="radio" name="q{{i}}" value="{{ val }}" required>
-                    <span>{{ val }}</span>
-                </label>
-                {% endfor %}
+                <label><input type="radio" name="q{{i}}" value="1" required><span>Tidak Ada</span></label>
+                <label><input type="radio" name="q{{i}}" value="2" required><span>Sangat Ringan</span></label>
+                <label><input type="radio" name="q{{i}}" value="3" required><span>Sedang</span></label>
+                <label><input type="radio" name="q{{i}}" value="4" required><span>Parah</span></label>
+                <label><input type="radio" name="q{{i}}" value="5" required><span>Sangat Parah</span></label>
             </div>
         </div>
         {% endfor %}
 
         <button type="submit">🔍 Prediksi Sekarang</button>
-        
         <a href="/" class="btn-back">⬅ Kembali ke Home</a>
     </form>
 </div>
 
 <script>
-const total = 16;
-function updateProgress() {
-    let answered = 0;
-    for (let i = 0; i < total; i++) {
-        if (document.querySelector('input[name="q' + i + '"]:checked')) answered++;
+    const total = 16;
+    function updateProgress() {
+        let answered = 0;
+        for (let i = 0; i < total; i++) {
+            if (document.querySelector('input[name="q' + i + '"]:checked')) answered++;
+        }
+        let percent = (answered / total) * 100;
+        document.getElementById("progress-bar").style.width = percent + "%";
+        document.getElementById("progress-text").innerText = answered + " / " + total + " terisi";
     }
-    let percent = (answered / total) * 100;
-    document.getElementById("progress-bar").style.width = percent + "%";
-    document.getElementById("progress-text").innerText = answered + " / " + total + " terisi";
-}
-document.querySelectorAll('input[type="radio"]').forEach(r => r.addEventListener("change", updateProgress));
+    document.querySelectorAll('input[type="radio"]').forEach(r => r.addEventListener("change", updateProgress));
 </script>
 
 </body>
