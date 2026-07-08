@@ -217,7 +217,8 @@ def predict():
         # ================= RETURN =================
         return render_template(
         "result.html",
-        persen=round(probabilitas[1] * 100, 2),
+        persen = round(float(probabilitas[idx_ispa]) * 100, 2),
+        persen=persen,
         nama=nama,
         umur=umur,
         top3=top3,
