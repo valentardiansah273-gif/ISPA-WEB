@@ -148,34 +148,35 @@ def logout():
 @app.route('/predict', methods=['POST'])
 def predict():
     try:
-        # Ambil input sesuai urutan fitur
         input_data = []
         
-        for fitur in fitur_urutan:
-            nilai = request.form.get(fitur)
-
+        # 1. Ambil q0 sampai q15
+        for i in range(16):
+            nilai = request.form.get(f"q{i}")
             if nilai is None or nilai == "":
                 nilai = 0
             else:
                 nilai = float(nilai)
-
             input_data.append(nilai)
 
-        # Ubah ke array
-        input_array = np.array(input_data).reshape(1, -1)
+        # 2. Tambahkan umur
+        # Pastikan posisi insert(0, umur) sesuai dengan urutan saat training.
+        # Jika saat training umur ada di urutan terakhir, gunakan input_data.append(umur)
+        umur = float(request.form.get("umur", 0))
+        input_data.insert(0, umur)
 
-        # SCALING (WAJIB)
+        # 3. Ubah ke array dan proses
+        input_array = np.array(input_data).reshape(1, -1)
+        
+        # Scaling (WAJIB menggunakan scaler yang sudah di-fit saat training)
         input_scaled = scaler.transform(input_array)
 
-        # Prediksi
+        # 4. Prediksi
         hasil = model.predict(input_scaled)[0]
         probabilitas = model.predict_proba(input_scaled)[0]
 
-        # Mapping hasil
-        if hasil == 1:
-            diagnosis = "Terindikasi ISPA"
-        else:
-            diagnosis = "Tidak Terindikasi ISPA"
+        # 5. Mapping hasil
+        diagnosis = "Terindikasi ISPA" if hasil == 1 else "Tidak Terindikasi ISPA"
 
         return render_template(
             'index.html',
