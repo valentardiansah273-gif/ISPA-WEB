@@ -40,7 +40,7 @@ def admin_dashboard():
         return render_template('admin_dashboard.html', riwayat=semua_riwayat)
     finally:
         conn.close()
-        
+
 @app.route('/admin/riwayat')
 @admin_required
 def admin_riwayat():
