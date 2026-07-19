@@ -71,27 +71,27 @@ def admin_users():
 def admin_statistik():
     conn = get_db_connection()
     try:
+        # Ambil semua data tanpa di-GROUP BY di SQL
         with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
-            # Ambil semua data mentah apa adanya
             cursor.execute("SELECT hasil FROM riwayat")
-            data = cursor.fetchall()
+            semua_data = cursor.fetchall()
             
-            stats_dict = {}
-            for row in data:
-                # Normalisasi label
-                h = row['hasil'].strip().upper()
-                if "TIDAK" in h and "ISPA" in h:
-                    label = "Tidak ISPA"
-                elif "ISPA" in h:
-                    label = "ISPA"
-                else:
-                    label = h
-                
-                stats_dict[label] = stats_dict.get(label, 0) + 1
+        # Olah data menggunakan Python agar 100% akurat
+        stats_map = {}
+        for row in semua_data:
+            raw_hasil = row['hasil'].strip()
+            # Logika pengelompokan yang ketat
+            if raw_hasil.lower() == 'ispa':
+                kunci = 'ISPA'
+            else:
+                # Anggap semua yang bukan 'ispa' murni adalah 'Tidak ISPA'
+                kunci = 'Tidak ISPA'
             
-            # Format menjadi list of dict agar sesuai dengan template
-            stats = [{'hasil': k, 'total': v} for k, v in stats_dict.items()]
+            stats_map[kunci] = stats_map.get(kunci, 0) + 1
             
+        # Konversi ke format yang bisa dibaca oleh template
+        stats = [{'hasil': k, 'total': v} for k, v in stats_map.items()]
+        
         return render_template('admin_statistik.html', stats=stats)
     finally:
         conn.close()
