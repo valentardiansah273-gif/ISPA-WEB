@@ -55,12 +55,27 @@ def admin_dashboard():
 def admin_users():
     conn = get_db_connection()
     try:
+        # Mengambil semua user kecuali mungkin admin sendiri (opsional)
         with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
             cursor.execute('SELECT username, role, is_active FROM users')
             users = cursor.fetchall()
+        # Mengirim data 'users' ke template HTML
         return render_template('admin_users.html', users=users)
     finally:
+        conn.close() # Penting agar database tidak penuh/error
+
+@app.route('/admin/toggle_user/<username>', methods=['POST'])
+@admin_required
+def toggle_user(username):
+    conn = get_db_connection()
+    try:
+        # Mengubah status True -> False atau sebaliknya
+        with conn.cursor() as cursor:
+            cursor.execute("UPDATE users SET is_active = NOT is_active WHERE username = %s", (username,))
+        conn.commit()
+    finally:
         conn.close()
+    return redirect('/admin/users')
 
 @app.route('/admin/statistik')
 @admin_required
