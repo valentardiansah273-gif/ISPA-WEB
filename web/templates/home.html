@@ -11,7 +11,7 @@
         color: white;
     }
 
-    /* 🔥 NAVBAR GLASS EFFECT */
+    /* Navbar Glass Effect */
     .navbar {
         background: rgba(0, 0, 0, 0.4) !important;
         backdrop-filter: blur(10px);
@@ -19,7 +19,7 @@
         box-shadow: 0 4px 20px rgba(0,0,0,0.2);
     }
 
-    /* 🔥 LOGO BULAT + SHADOW */
+    /* Logo Bulat + Shadow */
     .logo-img {
         width: 40px;
         height: 40px;
@@ -29,13 +29,13 @@
         transition: 0.3s;
     }
 
-    /* 🔥 HOVER LOGO */
+    /* Hover Logo */
     .logo-img:hover {
         transform: scale(1.1) rotate(5deg);
         box-shadow: 0 0 20px rgba(255,255,255,0.9);
     }
 
-    /* 🔥 NAVBAR LINK ANIMATION */
+    /* Navbar Link Animation */
     .nav-link {
         position: relative;
         transition: 0.3s;
@@ -60,14 +60,14 @@
         color: #00c6ff !important;
     }
 
-    /* HERO */
+    /* Hero */
     .hero {
         height: 90vh;
         display: flex;
         align-items: center;
     }
 
-    /* BUTTON */
+    /* Button */
     .btn-custom {
         padding: 15px 30px;
         font-size: 18px;
@@ -88,13 +88,12 @@
     .nav-link.active::after {
         width: 100%;
     }
-
     </style>
 </head>
 
 <body>
 
-<!-- 🔥 NAVBAR -->
+<!-- Navbar -->
 <nav class="navbar navbar-expand-lg navbar-dark px-4">
     
     <a class="navbar-brand d-flex align-items-center" href="/">
@@ -129,10 +128,15 @@
         </ul>
 
         <!-- RIGHT -->
-        <div class="d-flex gap-2">
+        <div class="d-flex gap-2 align-items-center">
 
             {% if 'username' in session %}
-                <span class="text-white me-2">👤 {{ session['username'] }}</span>
+                <!-- Tombol Admin Panel Khusus -->
+                {% if session.get('role') == 'admin' %}
+                    <a href="/admin/dashboard" class="btn btn-warning btn-sm">Admin Panel</a>
+                {% endif %}
+
+                <span class="text-white me-2">Halo, {{ session['username'] }}</span>
                 <a href="/logout" class="btn btn-danger btn-sm">Logout</a>
             {% else %}
                 <a href="/login" class="btn btn-outline-light btn-sm">Login</a>
@@ -145,7 +149,7 @@
 </nav>
 
 
-<!-- 🔥 HERO -->
+<!-- HERO -->
 <div class="container hero">
 <div class="row w-100">
 

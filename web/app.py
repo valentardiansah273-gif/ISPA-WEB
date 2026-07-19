@@ -20,16 +20,7 @@ import pandas as pd
 
 app = Flask(__name__)
 app.secret_key = "secret"
-def admin_required(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        # Pastikan session role tersedia dan bernilai 'admin'
-        if session.get('role') != 'admin':
-            return abort(403)
-        return f(*args, **kwargs)
-    return decorated_function
-# ================= ADMIN =================
-# Pastikan fungsi dekorator didefinisikan di sini, sebelum route admin
+# ================= DEKORATOR ADMIN =================
 def admin_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -37,7 +28,7 @@ def admin_required(f):
             return abort(403)
         return f(*args, **kwargs)
     return decorated_function
-
+# ================= ADMIN ROUTES =================
 @app.route('/admin/dashboard')
 @admin_required
 def admin_dashboard():
@@ -48,34 +39,19 @@ def admin_dashboard():
             semua_riwayat = cursor.fetchall()
         return render_template('admin_dashboard.html', riwayat=semua_riwayat)
     finally:
-        conn.close() # Koneksi WAJIB ditutup untuk mencegah error koneksi penuh
+        conn.close()
 
 @app.route('/admin/users')
 @admin_required
 def admin_users():
     conn = get_db_connection()
     try:
-        # Mengambil semua user kecuali mungkin admin sendiri (opsional)
         with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
             cursor.execute('SELECT username, role, is_active FROM users')
             users = cursor.fetchall()
-        # Mengirim data 'users' ke template HTML
         return render_template('admin_users.html', users=users)
     finally:
-        conn.close() # Penting agar database tidak penuh/error
-
-@app.route('/admin/toggle_user/<username>', methods=['POST'])
-@admin_required
-def toggle_user(username):
-    conn = get_db_connection()
-    try:
-        # Mengubah status True -> False atau sebaliknya
-        with conn.cursor() as cursor:
-            cursor.execute("UPDATE users SET is_active = NOT is_active WHERE username = %s", (username,))
-        conn.commit()
-    finally:
         conn.close()
-    return redirect('/admin/users')
 
 @app.route('/admin/statistik')
 @admin_required
@@ -101,21 +77,18 @@ def toggle_user(username):
         conn.close()
     return redirect('/admin/users')
 
-# ================= MODEL =================
-model = joblib.load("model_saved/model_rf.pkl")
-importance = joblib.load("model_saved/importance.pkl")
-fitur_urutan = joblib.load("model_saved/fitur_urutan.pkl")
-scaler = joblib.load("model_saved/scaler.pkl")
-
-importance = joblib.load("model_saved/importance.pkl")
-top3 = importance.head(3)["Fitur"].tolist()
-
-# ================= DATABASE URL =================
+# ================= DATABASE & MODEL =================
 DATABASE_URL = "postgresql://usrcincbrlnv5ctctci3:IBfGxEleM4JgSh94b4slGSAjUVqw1K@bzv6ndii9goa0jgadd44-postgresql.services.clever-cloud.com:50013/bzv6ndii9goa0jgadd44"
 
 def get_db_connection():
     return psycopg2.connect(DATABASE_URL)
 
+model = joblib.load("model_saved/model_rf.pkl")
+fitur_urutan = joblib.load("model_saved/fitur_urutan.pkl")
+scaler = joblib.load("model_saved/scaler.pkl")
+importance = joblib.load("model_saved/importance.pkl")
+if __name__ == '__main__':
+    app.run(debug=True)
 
 # ================= HOME =================
 @app.route('/')
