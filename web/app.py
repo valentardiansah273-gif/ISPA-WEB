@@ -72,14 +72,14 @@ def admin_statistik():
     conn = get_db_connection()
     try:
         with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
-            # Menggunakan logika SQL yang lebih kuat untuk mengelompokkan data
+            # Kita bersihkan data di level query sebelum dihitung
             cursor.execute('''
                 SELECT 
                     CASE 
-                        WHEN LOWER(TRIM(hasil)) LIKE 'tidak%ispa%' THEN 'Tidak ISPA'
-                        WHEN LOWER(TRIM(hasil)) = 'ispa' THEN 'ISPA'
+                        WHEN hasil ILIKE '%tidak%ispa%' THEN 'Tidak ISPA'
+                        WHEN hasil ILIKE 'ispa' THEN 'ISPA'
                         ELSE hasil 
-                    END as hasil, 
+                    END as kategori_hasil, 
                     SUM(count) as total
                 FROM (
                     SELECT hasil, COUNT(*) as count 
@@ -88,7 +88,8 @@ def admin_statistik():
                 ) as subquery
                 GROUP BY 1
             ''')
-            stats = cursor.fetchall()
+            # Ubah 'stats' agar bisa dibaca template
+            stats = [{'hasil': row['kategori_hasil'], 'total': row['total']} for row in cursor.fetchall()]
         return render_template('admin_statistik.html', stats=stats)
     finally:
         conn.close()
