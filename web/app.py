@@ -72,7 +72,12 @@ def admin_statistik():
     conn = get_db_connection()
     try:
         with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
-            cursor.execute('SELECT hasil, COUNT(*) as total FROM riwayat GROUP BY hasil')
+            # Kita gunakan TRIM untuk menghapus spasi tambahan dan UPPER untuk menyamakan format
+            cursor.execute('''
+                SELECT UPPER(TRIM(hasil)) as hasil, COUNT(*) as total 
+                FROM riwayat 
+                GROUP BY UPPER(TRIM(hasil))
+            ''')
             stats = cursor.fetchall()
         return render_template('admin_statistik.html', stats=stats)
     finally:
