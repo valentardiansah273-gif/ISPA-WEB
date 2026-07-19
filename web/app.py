@@ -66,6 +66,16 @@ def admin_statistik():
     conn.close()
     return render_template('admin_statistik.html', stats=stats)
 
+@app.route('/admin/toggle_user/<username>', methods=['POST'])
+@admin_required
+def toggle_user(username):
+    conn = get_db_connection()
+    # Membalik status is_active
+    conn.execute("UPDATE users SET is_active = NOT is_active WHERE username = %s", (username,))
+    conn.commit()
+    conn.close()
+    return redirect('/admin/users')
+
 # ================= MODEL =================
 model = joblib.load("model_saved/model_rf.pkl")
 importance = joblib.load("model_saved/importance.pkl")
