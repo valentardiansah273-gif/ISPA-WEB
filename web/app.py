@@ -99,28 +99,29 @@ def admin_statistik():
 
 @app.route('/admin/export')
 @admin_required
-def admin_export():
+def admin_export_page():
+    return render_template('admin_export.html')
+
+@app.route('/admin/download_csv')
+@admin_required
+def download_csv():
     conn = get_db_connection()
     try:
-        # Mengambil seluruh data riwayat
-        query = "SELECT * FROM riwayat ORDER BY id DESC"
-        df = pd.read_sql_query(query, conn)
+        # Mengambil data
+        df = pd.read_sql_query("SELECT * FROM riwayat", conn)
         
-        # Normalisasi data 'hasil' agar seragam (seperti di halaman statistik)
+        # Normalisasi
         df['hasil'] = df['hasil'].apply(lambda x: 'ISPA' if x.strip().lower() == 'ispa' else 'Tidak ISPA')
         
-        # Buat file Excel di memori
-        output = io.BytesIO()
-        with pd.ExcelWriter(output, engine='openpyxl') as writer:
-            df.to_excel(writer, index=False, sheet_name='Data Riwayat')
-        
+        # Ekspor ke CSV (memori)
+        output = io.StringIO()
+        df.to_csv(output, index=False)
         output.seek(0)
         
-        return send_file(
-            output, 
-            download_name='Laporan_Riwayat_Prediksi.xlsx', 
-            as_attachment=True,
-            mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        return Response(
+            output,
+            mimetype='text/csv',
+            headers={'Content-Disposition': 'attachment; filename=Laporan_Riwayat_Prediksi.csv'}
         )
     finally:
         conn.close()
