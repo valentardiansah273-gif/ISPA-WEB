@@ -34,3 +34,4 @@ packaging==26.2
 psycopg2-binary
 SQLAlchemy
 imbalanced-learn
+openpyxl

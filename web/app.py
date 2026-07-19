@@ -8,6 +8,7 @@ from functools import wraps
 from flask import session, abort
 from functools import wraps
 from flask import session, abort, render_template, request, redirect
+from flask import send_file
 
 import psycopg2
 import psycopg2.extras  
@@ -93,6 +94,34 @@ def admin_statistik():
         stats = [{'hasil': k, 'total': v} for k, v in stats_map.items()]
         
         return render_template('admin_statistik.html', stats=stats)
+    finally:
+        conn.close()
+
+@app.route('/admin/export')
+@admin_required
+def admin_export():
+    conn = get_db_connection()
+    try:
+        # Mengambil seluruh data riwayat
+        query = "SELECT * FROM riwayat ORDER BY id DESC"
+        df = pd.read_sql_query(query, conn)
+        
+        # Normalisasi data 'hasil' agar seragam (seperti di halaman statistik)
+        df['hasil'] = df['hasil'].apply(lambda x: 'ISPA' if x.strip().lower() == 'ispa' else 'Tidak ISPA')
+        
+        # Buat file Excel di memori
+        output = io.BytesIO()
+        with pd.ExcelWriter(output, engine='openpyxl') as writer:
+            df.to_excel(writer, index=False, sheet_name='Data Riwayat')
+        
+        output.seek(0)
+        
+        return send_file(
+            output, 
+            download_name='Laporan_Riwayat_Prediksi.xlsx', 
+            as_attachment=True,
+            mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
     finally:
         conn.close()
 
