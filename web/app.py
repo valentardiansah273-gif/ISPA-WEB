@@ -47,6 +47,25 @@ def admin_dashboard():
         
     return render_template('admin_dashboard.html', riwayat=semua_riwayat)
 
+# Route untuk Manajemen User
+@app.route('/admin/users')
+@admin_required
+def admin_users():
+    conn = get_db_connection()
+    users = conn.execute('SELECT username, role, is_active FROM users').fetchall()
+    conn.close()
+    return render_template('admin_users.html', users=users)
+
+# Route untuk Statistik
+@app.route('/admin/statistik')
+@admin_required
+def admin_statistik():
+    # Contoh query sederhana untuk statistik
+    conn = get_db_connection()
+    stats = conn.execute('SELECT hasil, COUNT(*) as total FROM riwayat GROUP BY hasil').fetchall()
+    conn.close()
+    return render_template('admin_statistik.html', stats=stats)
+
 # ================= MODEL =================
 model = joblib.load("model_saved/model_rf.pkl")
 importance = joblib.load("model_saved/importance.pkl")
