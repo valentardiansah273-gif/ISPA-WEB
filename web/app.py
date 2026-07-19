@@ -20,60 +20,61 @@ import pandas as pd
 
 app = Flask(__name__)
 app.secret_key = "secret"
-# ================= ADMIN =================
 def admin_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        # Memastikan user sudah login dan role-nya adalah 'admin'
+        # Pastikan session role tersedia dan bernilai 'admin'
         if session.get('role') != 'admin':
-            return abort(403) # Menampilkan error akses dilarang
+            return abort(403)
         return f(*args, **kwargs)
     return decorated_function
-
+# ================= ADMIN =================
 @app.route('/admin/dashboard')
 @admin_required
 def admin_dashboard():
-    # 1. Gunakan fungsi get_db_connection() yang sudah Anda miliki
     conn = get_db_connection()
     try:
-        # 2. Gunakan cursor dengan RealDictCursor agar hasil query mudah diakses
-        cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
-        cursor.execute("SELECT * FROM riwayat")
-        semua_riwayat = cursor.fetchall()
-        cursor.close()
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            cursor.execute("SELECT * FROM riwayat")
+            semua_riwayat = cursor.fetchall()
+        return render_template('admin_dashboard.html', riwayat=semua_riwayat)
     finally:
-        # 3. Pastikan koneksi ditutup setelah digunakan
         conn.close()
-        
-    return render_template('admin_dashboard.html', riwayat=semua_riwayat)
 
-# Route untuk Manajemen User
 @app.route('/admin/users')
 @admin_required
 def admin_users():
     conn = get_db_connection()
-    users = conn.execute('SELECT username, role, is_active FROM users').fetchall()
-    conn.close()
-    return render_template('admin_users.html', users=users)
+    try:
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            cursor.execute('SELECT username, role, is_active FROM users')
+            users = cursor.fetchall()
+        return render_template('admin_users.html', users=users)
+    finally:
+        conn.close()
 
-# Route untuk Statistik
 @app.route('/admin/statistik')
 @admin_required
 def admin_statistik():
-    # Contoh query sederhana untuk statistik
     conn = get_db_connection()
-    stats = conn.execute('SELECT hasil, COUNT(*) as total FROM riwayat GROUP BY hasil').fetchall()
-    conn.close()
-    return render_template('admin_statistik.html', stats=stats)
+    try:
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            cursor.execute('SELECT hasil, COUNT(*) as total FROM riwayat GROUP BY hasil')
+            stats = cursor.fetchall()
+        return render_template('admin_statistik.html', stats=stats)
+    finally:
+        conn.close()
 
 @app.route('/admin/toggle_user/<username>', methods=['POST'])
 @admin_required
 def toggle_user(username):
     conn = get_db_connection()
-    # Membalik status is_active
-    conn.execute("UPDATE users SET is_active = NOT is_active WHERE username = %s", (username,))
-    conn.commit()
-    conn.close()
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute("UPDATE users SET is_active = NOT is_active WHERE username = %s", (username,))
+        conn.commit()
+    finally:
+        conn.close()
     return redirect('/admin/users')
 
 # ================= MODEL =================
