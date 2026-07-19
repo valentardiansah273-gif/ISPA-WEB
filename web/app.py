@@ -29,6 +29,15 @@ def admin_required(f):
         return f(*args, **kwargs)
     return decorated_function
 # ================= ADMIN =================
+# Pastikan fungsi dekorator didefinisikan di sini, sebelum route admin
+def admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if session.get('role') != 'admin':
+            return abort(403)
+        return f(*args, **kwargs)
+    return decorated_function
+
 @app.route('/admin/dashboard')
 @admin_required
 def admin_dashboard():
@@ -39,7 +48,7 @@ def admin_dashboard():
             semua_riwayat = cursor.fetchall()
         return render_template('admin_dashboard.html', riwayat=semua_riwayat)
     finally:
-        conn.close()
+        conn.close() # Koneksi WAJIB ditutup untuk mencegah error koneksi penuh
 
 @app.route('/admin/users')
 @admin_required
