@@ -40,6 +40,19 @@ def admin_dashboard():
         return render_template('admin_dashboard.html', riwayat=semua_riwayat)
     finally:
         conn.close()
+        
+@app.route('/admin/riwayat')
+@admin_required
+def admin_riwayat():
+    conn = get_db_connection()
+    try:
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            # Mengambil semua riwayat dari seluruh user, urutkan dari yang terbaru
+            cursor.execute("SELECT * FROM riwayat ORDER BY id DESC")
+            semua_riwayat = cursor.fetchall()
+        return render_template('admin_riwayat.html', riwayat=semua_riwayat)
+    finally:
+        conn.close()
 
 @app.route('/admin/users')
 @admin_required
