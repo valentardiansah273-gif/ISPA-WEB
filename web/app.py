@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, session, Response
+from flask import Flask, render_template, request, redirect, session, Response, abort
 from werkzeug.security import generate_password_hash, check_password_hash
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
@@ -164,6 +164,7 @@ def register():
 
 
 # ================= LOGIN =================
+# ================= LOGIN =================
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -177,10 +178,8 @@ def login():
         try:
             # Menggunakan RealDictCursor agar hasil query bisa diakses seperti dictionary
             cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
-            cursor.execute(
-                "SELECT * FROM users WHERE username=%s",
-                (username,)
-            )
+            # Pastikan kolom role dan is_active ada di tabel users
+            cursor.execute("SELECT * FROM users WHERE username=%s", (username,))
             user = cursor.fetchone()
             cursor.close()
         finally:
@@ -189,13 +188,18 @@ def login():
         if not user:
             return render_template('login.html', error="User tidak ditemukan!")
 
-        # Mengecek password dan menyimpan session
+        # Mengecek password
         if check_password_hash(user['password'], password):
+            # Cek apakah kolom is_active ada dan apakah user diblokir
+            if user.get('is_active') == False:
+                return render_template('login.html', error="Akun Anda telah diblokir oleh admin!")
+
+            # Menyimpan data ke session
             session['username'] = user['username']
-            # Menyimpan role dari database ke dalam session
-            session['role'] = user['role'] 
+            # Menggunakan .get() agar tidak error jika kolom role tidak ada
+            session['role'] = user.get('role', 'user') 
             
-            # Opsional: Redirect berdasarkan role
+            # Redirect berdasarkan role
             if session['role'] == 'admin':
                 return redirect('/admin/dashboard')
             return redirect('/')
