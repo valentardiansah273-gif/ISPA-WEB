@@ -72,24 +72,26 @@ def admin_statistik():
     conn = get_db_connection()
     try:
         with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
-            # Kita bersihkan data di level query sebelum dihitung
-            cursor.execute('''
-                SELECT 
-                    CASE 
-                        WHEN hasil ILIKE '%tidak%ispa%' THEN 'Tidak ISPA'
-                        WHEN hasil ILIKE 'ispa' THEN 'ISPA'
-                        ELSE hasil 
-                    END as kategori_hasil, 
-                    SUM(count) as total
-                FROM (
-                    SELECT hasil, COUNT(*) as count 
-                    FROM riwayat 
-                    GROUP BY hasil
-                ) as subquery
-                GROUP BY 1
-            ''')
-            # Ubah 'stats' agar bisa dibaca template
-            stats = [{'hasil': row['kategori_hasil'], 'total': row['total']} for row in cursor.fetchall()]
+            # Ambil semua data mentah apa adanya
+            cursor.execute("SELECT hasil FROM riwayat")
+            data = cursor.fetchall()
+            
+            stats_dict = {}
+            for row in data:
+                # Normalisasi label
+                h = row['hasil'].strip().upper()
+                if "TIDAK" in h and "ISPA" in h:
+                    label = "Tidak ISPA"
+                elif "ISPA" in h:
+                    label = "ISPA"
+                else:
+                    label = h
+                
+                stats_dict[label] = stats_dict.get(label, 0) + 1
+            
+            # Format menjadi list of dict agar sesuai dengan template
+            stats = [{'hasil': k, 'total': v} for k, v in stats_dict.items()]
+            
         return render_template('admin_statistik.html', stats=stats)
     finally:
         conn.close()
