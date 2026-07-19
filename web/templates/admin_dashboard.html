@@ -1,0 +1,12 @@
+<table>
+    {% for user in all_users %}
+    <tr>
+        <td>{{ user.username }}</td>
+        <td>
+            <form action="/admin/delete_user/{{ user.id }}" method="POST">
+                <button type="submit" onclick="return confirm('Yakin ingin menghapus user ini?')">Hapus</button>
+            </form>
+        </td>
+    </tr>
+    {% endfor %}
+</table>

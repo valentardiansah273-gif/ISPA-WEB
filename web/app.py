@@ -4,6 +4,10 @@ from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
 from reportlab.lib import colors
 from datetime import datetime
+from functools import wraps
+from flask import session, abort
+from functools import wraps
+from flask import session, abort, render_template, request, redirect
 
 import psycopg2
 import psycopg2.extras  
@@ -16,6 +20,32 @@ import pandas as pd
 
 app = Flask(__name__)
 app.secret_key = "secret"
+# ================= ADMIN =================
+def admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        # Memastikan user sudah login dan role-nya adalah 'admin'
+        if session.get('role') != 'admin':
+            return abort(403) # Menampilkan error akses dilarang
+        return f(*args, **kwargs)
+    return decorated_function
+
+@app.route('/admin/dashboard')
+@admin_required
+def admin_dashboard():
+    # 1. Gunakan fungsi get_db_connection() yang sudah Anda miliki
+    conn = get_db_connection()
+    try:
+        # 2. Gunakan cursor dengan RealDictCursor agar hasil query mudah diakses
+        cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        cursor.execute("SELECT * FROM riwayat")
+        semua_riwayat = cursor.fetchall()
+        cursor.close()
+    finally:
+        # 3. Pastikan koneksi ditutup setelah digunakan
+        conn.close()
+        
+    return render_template('admin_dashboard.html', riwayat=semua_riwayat)
 
 # ================= MODEL =================
 model = joblib.load("model_saved/model_rf.pkl")
@@ -118,6 +148,7 @@ def login():
 
         conn = get_db_connection()
         try:
+            # Menggunakan RealDictCursor agar hasil query bisa diakses seperti dictionary
             cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
             cursor.execute(
                 "SELECT * FROM users WHERE username=%s",
@@ -131,8 +162,15 @@ def login():
         if not user:
             return render_template('login.html', error="User tidak ditemukan!")
 
+        # Mengecek password dan menyimpan session
         if check_password_hash(user['password'], password):
             session['username'] = user['username']
+            # Menyimpan role dari database ke dalam session
+            session['role'] = user['role'] 
+            
+            # Opsional: Redirect berdasarkan role
+            if session['role'] == 'admin':
+                return redirect('/admin/dashboard')
             return redirect('/')
         else:
             return render_template('login.html', error="Password salah!")
