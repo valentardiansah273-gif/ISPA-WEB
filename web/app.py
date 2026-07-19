@@ -72,11 +72,21 @@ def admin_statistik():
     conn = get_db_connection()
     try:
         with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
-            # Kita gunakan TRIM untuk menghapus spasi tambahan dan UPPER untuk menyamakan format
+            # Menggunakan logika SQL yang lebih kuat untuk mengelompokkan data
             cursor.execute('''
-                SELECT UPPER(TRIM(hasil)) as hasil, COUNT(*) as total 
-                FROM riwayat 
-                GROUP BY UPPER(TRIM(hasil))
+                SELECT 
+                    CASE 
+                        WHEN LOWER(TRIM(hasil)) LIKE 'tidak%ispa%' THEN 'Tidak ISPA'
+                        WHEN LOWER(TRIM(hasil)) = 'ispa' THEN 'ISPA'
+                        ELSE hasil 
+                    END as hasil, 
+                    SUM(count) as total
+                FROM (
+                    SELECT hasil, COUNT(*) as count 
+                    FROM riwayat 
+                    GROUP BY hasil
+                ) as subquery
+                GROUP BY 1
             ''')
             stats = cursor.fetchall()
         return render_template('admin_statistik.html', stats=stats)
