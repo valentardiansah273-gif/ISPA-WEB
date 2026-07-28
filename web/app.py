@@ -299,7 +299,7 @@ def predict():
         gejala = []
         jawaban_dict = {}
 
-        for i in range(16):
+        for i in range(17):
             nilai = request.form.get(f"q{i}")
 
             try:
@@ -346,7 +346,9 @@ def predict():
 
         # ================= DIAGNOSIS =================
         diagnosis = "ISPA" if hasil == 0 else "Tidak ISPA"
-
+        print("DEBUG - model.classes_:", model.classes_)
+        print("DEBUG - probabilitas mentah:", probabilitas)
+        print("DEBUG - index ispa:", idx_ispa, "-> Persen dihitung:", persen)
         # ================= TOP 3 GEJALA =================
         top3 = sorted(
             [(f"q{i}", gejala[i]) for i in range(len(gejala))],
@@ -623,4 +625,4 @@ def home_page():
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='127.0.0.1', port=5000, debug=False)
