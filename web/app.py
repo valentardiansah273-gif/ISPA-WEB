@@ -316,7 +316,7 @@ def predict():
             val_biner = 1 if val_asli >= 3 else 0
             gejala.append(val_biner)
         # ================= DATAFRAME =================
-        input_data = gejala
+        input_data = [umur] + gejala
 
         if len(input_data) != len(fitur_urutan):
             raise ValueError(f"Jumlah fitur tidak sesuai dengan model. Diterima: {len(input_data)}, Harapan: {len(fitur_urutan)}")
