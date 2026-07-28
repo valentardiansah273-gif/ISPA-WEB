@@ -27,17 +27,17 @@ else:
     X = df.drop(columns=["Label_ISPA", "Diagnosis"])
     y = df["Label_ISPA"]
 
-    # Split data
+    # Split data dengan stratify agar proporsi kelas seimbang di train & test
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=0.2, random_state=42, stratify=y
     )
 
-    # Scaling
+    # Scaling menggunakan MinMaxScaler
     scaler = MinMaxScaler()
     X_train_scaled = scaler.fit_transform(X_train)
     X_test_scaled = scaler.transform(X_test)
 
-    # Balancing dengan SMOTE
+    # Balancing dengan SMOTE (hanya diterapkan pada data latih)
     smote = SMOTE(random_state=42)
     X_train_bal, y_train_bal = smote.fit_resample(X_train_scaled, y_train)
 
@@ -54,7 +54,7 @@ else:
 
     rf = RandomForestClassifier(random_state=42, class_weight='balanced')
 
-    # Grid Search
+    # Grid Search dengan Cross-Validation
     grid_search = GridSearchCV(estimator=rf, param_grid=param_grid, cv=3, n_jobs=-1, scoring='accuracy')
     grid_search.fit(X_train_bal, y_train_bal)
 
@@ -110,4 +110,4 @@ else:
     joblib.dump(X.columns.tolist(), "model_saved/fitur_urutan.pkl")
     joblib.dump(fitur_importance, "model_saved/importance.pkl")
 
-    print("\n✅ Model, Scaler, dan Importance berhasil disimpan ke folder 'model_saved/'!")
+    print("\n✅ Model, Scaler, dan asset lainnya berhasil disimpan ke folder 'model_saved/'!")
