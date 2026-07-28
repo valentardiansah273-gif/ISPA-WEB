@@ -296,32 +296,54 @@ def predict():
         except:
             umur = 0.0
 
+        # Ambil nilai q0 sampai q15
         gejala = []
         jawaban_dict = {}
 
-        # Mengambil 16 gejala (q0 sampai q15) tanpa menyertakan umur
         for i in range(16):
             nilai = request.form.get(f"q{i}")
-
             try:
-                # Simpan nilai asli (1-5) ke variabel sementara
                 val_asli = float(nilai) if nilai else 1.0
             except:
                 val_asli = 1.0
 
-            # Simpan ke dict untuk keperluan database/tampilan detail
             jawaban_dict[f"q{i}"] = int(val_asli)
-
-            # Konversi ke biner hanya untuk input model
             val_biner = 1 if val_asli >= 3 else 0
             gejala.append(val_biner)
-        # ================= DATAFRAME =================
-        input_data = [umur] + gejala
 
-        if len(input_data) != len(fitur_urutan):
-            raise ValueError(f"Jumlah fitur tidak sesuai dengan model. Diterima: {len(input_data)}, Harapan: {len(fitur_urutan)}")
+        # ================= MENYUSUN DATAFRAME SESUAI FITUR_URUTAN =================
+        # Kita buat dictionary berdasarkan nama kolom persis seperti fitur_urutan
+        # Pastikan nama key di bawah ini sama persis dengan elemen di list fitur_urutan Anda:
+        # ['Umur', 'Batuk_Kering', 'Batuk_Berdahak', 'Demam', 'Pilek', 'Hidung_Tersumbat', 
+        #  'Sesak_Napas', 'Nyeri_Tenggorokan', 'Sakit_Kepala', 'Mual_Muntah', 'Nyeri_Dada', 
+        #  'Suara_Serak', 'Kelelahan', 'Berkeringat_Malam', 'Nafsu_Makan_Turun', 'Hilang_Penciuman', 'Nyeri_Saat_Menelan']
 
-        input_df = pd.DataFrame([input_data], columns=fitur_urutan)
+        data_dict = {
+            'Umur': [umur],
+            'Batuk_Kering': [gejala[0]],
+            'Batuk_Berdahak': [gejala[1]],
+            'Demam': [gejala[2]],
+            'Pilek': [gejala[3]],
+            'Hidung_Tersumbat': [gejala[4]],
+            'Sesak_Napas': [gejala[5]],
+            'Nyeri_Tenggorokan': [gejala[6]],
+            'Sakit_Kepala': [gejala[7]],
+            'Mual_Muntah': [gejala[8]],
+            'Nyeri_Dada': [gejala[9]],
+            'Suara_Serak': [gejala[10]],
+            'Kelelahan': [gejala[11]],
+            'Berkeringat_Malam': [gejala[12]],
+            'Nafsu_Makan_Turun': [gejala[13]],
+            'Hilang_Penciuman': [gejala[14]],
+            'Nyeri_Saat_Menelan': [gejala[15]]
+        }
+
+        # Buat DataFrame dan pastikan urutannya mengikuti fitur_urutan dari pkl
+        input_df = pd.DataFrame(data_dict)
+        input_df = input_df[fitur_urutan]  # Mengunci urutan kolom agar dijamin pas
+
+        if len(input_df.columns) != len(fitur_urutan):
+            raise ValueError(f"Jumlah fitur tidak sesuai. Diterima: {len(input_df.columns)}, Harapan: {len(fitur_urutan)}")
 
         # ================= SCALING =================
         input_scaled = scaler.transform(input_df)
