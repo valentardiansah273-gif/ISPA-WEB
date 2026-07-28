@@ -287,7 +287,7 @@ def predict():
         if 'username' not in session:
             return redirect('/login')
 
- # ================= INPUT =================
+        # ================= INPUT =================
         nama = request.form.get("nama", "").strip()
         umur_raw = request.form.get("umur", 0)
 
@@ -299,7 +299,8 @@ def predict():
         gejala = []
         jawaban_dict = {}
 
-        for i in range(17):
+        # Mengambil 16 gejala (q0 sampai q15) tanpa menyertakan umur
+        for i in range(16):
             nilai = request.form.get(f"q{i}")
 
             try:
@@ -314,12 +315,11 @@ def predict():
             # Konversi ke biner hanya untuk input model
             val_biner = 1 if val_asli >= 3 else 0
             gejala.append(val_biner)
-
         # ================= DATAFRAME =================
-        input_data = [umur] + gejala
+        input_data = gejala
 
         if len(input_data) != len(fitur_urutan):
-            raise ValueError("Jumlah fitur tidak sesuai dengan model")
+            raise ValueError(f"Jumlah fitur tidak sesuai dengan model. Diterima: {len(input_data)}, Harapan: {len(fitur_urutan)}")
 
         input_df = pd.DataFrame([input_data], columns=fitur_urutan)
 
@@ -327,12 +327,13 @@ def predict():
         input_scaled = scaler.transform(input_df)
 
         # ================= PREDIKSI =================
-        hasil = model.predict(input_scaled)[0]
+        hasil = model.predict(input_df)[0]
+        probabilitas = model.predict_proba(input_df)[0]
 
-        if hasattr(model, "predict_proba"):
-            probabilitas = model.predict_proba(input_scaled)[0]
-        else:
-            probabilitas = [0.5, 0.5]  # fallback aman
+        return render_template('hasil.html', nama=nama, umur=umur, hasil=hasil, probabilitas=probabilitas)
+
+    except Exception as e:
+        return f"Terjadi kesalahan pada sistem: {str(e)}"
 
         # ================= AMBIL INDEX ISPA =================
         kelas = list(model.classes_)

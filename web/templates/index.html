@@ -119,10 +119,9 @@
 
         <div class="progress-wrapper">
             <div class="progress-container"><div id="progress-bar"></div></div>
-            <p id="progress-text">0 / 17 terisi</p>
+            <p id="progress-text">0 / 16 terisi</p>
         </div>
 
-        <!-- 17 Pertanyaan Sesuai Urutan Model Random Forest -->
         {% set pertanyaan = [
             "Apakah Anda mengalami batuk kering terus-menerus?",
             "Apakah Anda mengeluarkan dahak saat batuk?",
@@ -139,8 +138,7 @@
             "Apakah Anda sering berkeringat di malam hari?",
             "Apakah nafsu makan Anda menurun drastis?",
             "Apakah kemampuan penciuman Anda berkurang/hilang?",
-            "Apakah Anda merasa sakit saat menelan makanan/minuman?",
-            "Apakah Anda mengalami gejala tambahan atau keluhan lainnya?"
+            "Apakah Anda merasa sakit saat menelan makanan/minuman?"
         ] %}
 
         {% for i in range(pertanyaan|length) %}
@@ -162,7 +160,7 @@
 </div>
 
 <script>
-    const total = 17; // Diubah menjadi 17 agar sinkron dengan form dan model
+    const total = 16;
 
     function updateProgress() {
         let answered = 0;
