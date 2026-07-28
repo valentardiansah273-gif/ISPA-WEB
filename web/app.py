@@ -330,11 +330,6 @@ def predict():
         hasil = model.predict(input_df)[0]
         probabilitas = model.predict_proba(input_df)[0]
 
-        return render_template('result.html', nama=nama, umur=umur, hasil=hasil, probabilitas=probabilitas)
-
-    except Exception as e:
-        return f"Terjadi kesalahan pada sistem: {str(e)}"
-
         # ================= AMBIL INDEX ISPA =================
         kelas = list(model.classes_)
 
