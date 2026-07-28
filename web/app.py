@@ -348,25 +348,31 @@ def predict():
         # ================= SCALING =================
         input_scaled = scaler.transform(input_df)
 
-        # ================= PREDIKSI =================
-        hasil = model.predict(input_df)[0]
-        probabilitas = model.predict_proba(input_df)[0]
+        # ================= PREDIKSI (GUNAKAN input_scaled) =================
+        # PERBAIKAN 1: Wajib menggunakan input_scaled, BUKAN input_df
+        hasil = model.predict(input_scaled)[0]
+        probabilitas = model.predict_proba(input_scaled)[0]
 
         # ================= AMBIL INDEX ISPA =================
         kelas = list(model.classes_)
+        print("DEBUG model.classes_:", kelas)
+        print("DEBUG probabilitas mentah:", probabilitas)
 
-        if 0 in kelas:
-            idx_ispa = kelas.index(0)
+        # PERBAIKAN 2: Pastikan mengambil index untuk kelas 1 (Risiko Tinggi / ISPA)
+        # Jika kelas [0, 1], maka index 1 adalah kelas positif/ISPA
+        if 1 in kelas:
+            idx_ispa = kelas.index(1)
         else:
-            idx_ispa = 0
+            idx_ispa = 1 if len(kelas) > 1 else 0
 
         persen = round(float(probabilitas[idx_ispa]) * 100, 2)
 
         # ================= DIAGNOSIS =================
-        diagnosis = "ISPA" if hasil == 0 else "Tidak ISPA"
-        print("DEBUG - model.classes_:", model.classes_)
-        print("DEBUG - probabilitas mentah:", probabilitas)
+        # Jika hasil model bernilai 1 berarti ISPA, jika 0 berarti Tidak ISPA
+        diagnosis = "ISPA" if hasil == 1 else "Tidak ISPA"
+        
         print("DEBUG - index ispa:", idx_ispa, "-> Persen dihitung:", persen)
+        print("DEBUG - Hasil Diagnosis:", diagnosis)
         # ================= TOP 3 GEJALA =================
         top3 = sorted(
             [(f"q{i}", gejala[i]) for i in range(len(gejala))],
