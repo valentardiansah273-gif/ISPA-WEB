@@ -346,12 +346,7 @@ def predict():
 
         # ================= DIAGNOSIS =================
         diagnosis = "ISPA" if hasil == 0 else "Tidak ISPA"
-        jumlah_gejala_sedang_tinggi = sum(1 for val in jawaban_dict.values() if val >= 3)
-                
-                # Jika gejala yang bernilai >= 3 hanya ada 2 atau kurang (artinya hampir semua diisi ringan/tidak ada)
-        if jumlah_gejala_sedang_tinggi <= 2:
-                    diagnosis = "Tidak ISPA"  # Paksa jadi Tidak ISPA agar logis untuk awam
-                    persen = 35.0
+
         # ================= TOP 3 GEJALA =================
         top3 = sorted(
             [(f"q{i}", gejala[i]) for i in range(len(gejala))],
